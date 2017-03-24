@@ -13,7 +13,7 @@ before_script:
 - pip install commonconf
 - pip install python-coveralls
 script:
-- pep8 --exclude=uw_spotseeker/tests uw_spotseeker
+- pep8 uw_spotseeker
 - coverage run uw_spotseeker/test.py -v
 after_script:
 - coveralls
