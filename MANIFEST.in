@@ -1,0 +1,2 @@
+include uw_spotseeker/VERSION
+recursive-include uw_spotseeker *
