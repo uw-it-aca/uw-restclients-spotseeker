@@ -22,7 +22,7 @@ setup(
     author="UW-IT AXDD",
     author_email="aca-it@uw.edu",
     include_package_data=True,
-    install_requires=['UW-RestClients-Core>0.8,<1.0',
+    install_requires=['UW-RestClients-Core >= 1.1',
                       'python-dateutil',
                       'mock',
                      ],
@@ -36,7 +36,7 @@ setup(
         'License :: OSI Approved :: Apache Software License',
         'Operating System :: OS Independent',
         'Programming Language :: Python',
-        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.4',
     ],
 )
