@@ -4,19 +4,121 @@ This is the interface for interacting with the Spotseeker Server REST API
 
 from restclients_core.exceptions import DataFailureException
 from uw_spotseeker.dao import Spotseeker_DAO
-from uw_spotseeker.models import (
-    Spot, SpotType, SpotImage, ItemImage, SpotItem, SpotAvailableHours, SpotExtendedInfo)
+from uw_spotseeker.models import (Spot,
+                                  SpotType,
+                                  SpotImage,
+                                  ItemImage,
+                                  SpotItem,
+                                  SpotAvailableHours,
+                                  SpotExtendedInfo)
 from uw_spotseeker.exceptions import InvalidSpotID
-from django.utils.dateparse import parse_datetime, parse_time
-from urllib.parse import urlencode
+from commonconf import settings
+from commonconf.exceptions import NotConfigured
 import json
 import dateutil.parser
 import re
 import six
 import datetime
+import requests
+import mock
+from requests_oauthlib import OAuth1
+
+try:
+    from urllib import urlencode
+except ImportError:
+    from urllib.parse import urlencode
 
 
 class Spotseeker(object):
+
+    def post_image(self, spot_id, image):
+        url = "api/v1/spot/%s/image" % spot_id
+        implementation = Spotseeker_DAO().get_implementation()
+
+        if implementation.is_mock():
+            response = Spotseeker_DAO().putURL(url, {})
+            content = response.data
+            return content
+        else:
+            try:
+                headers = {"X-OAuth-User": settings.OAUTH_USER}
+                auth = OAuth1(settings.SPOTSEEKER_OAUTH_KEY,
+                              settings.SPOTSEEKER_OAUTH_SECRET)
+                full_url = settings.SPOTSEEKER_HOST + "/" + url
+                files = {'image': ('image.jpg', io.StringIO(image))}
+
+                response = requests.post(full_url,
+                                         files=files,
+                                         auth=auth,
+                                         headers=headers)
+                if response.status_code != 201:
+                    raise DataFailureException(url,
+                                               response.status_code,
+                                               response.content)
+            except AttributeError:
+                raise NotConfigured("must set OAUTH_ keys in settings")
+
+    def delete_image(self, spot_id, image_id, etag):
+        url = "/api/v1/spot/%s/image/%s" % (spot_id, image_id)
+        implementation = Spotseeker_DAO().get_implementation()
+
+        if implementation.is_mock():
+            response = mock.Mock()
+            response.status = 200
+        else:
+            try:
+                headers = {"X-OAuth-User": settings.OAUTH_USER,
+                           "If-Match": etag}
+                response, content = dao.deleteURL(url, headers)
+
+            except AttributeError:
+                raise NotConfigured("Must set OAUTH_USER in settings")
+
+        if response.status != 200:
+            raise DataFailureException(url, response.status, content)
+
+    def post_item_image(self, item_id, image):
+        url = "/api/v1/item/%s/image" % item_id
+        implementation = Spotseeker_DAO().get_implementation()
+
+        if implementation.is_mock():
+            response = Spotseeker_DAO().putURL(url, {})
+            content = response.data
+            return content
+        else:
+            try:
+                headers = {"X-OAuth-User": settings.OAUTH_USER}
+                auth = OAuth1(settings.SPOTSEEKER_OAUTH_KEY,
+                              settings.SPOTSEEKER_OAUTH_SECRET)
+                full_url = settings.SPOTSEEKER_HOST + "/" + url
+                files = {'image': ('image.jpg', io.StringIO(image))}
+
+                r = requests.post(full_url,
+                                  files=files,
+                                  auth=auth,
+                                  headers=headers)
+                if r.status_code != 201:
+                    raise DataFailureException(url, r.status_code, r.content)
+            except AttributeError as ex:
+                raise NotConfigured("Must set OAUTH_ keys in settings")
+
+    def delete_item_image(self, item_id, image_id, etag):
+        url = "/api/v1/item/%s/image/%s" % (item_id, image_id)
+        implementation = Spotseeker_DAO().get_implementation()
+
+        if implementation.is_mock():
+            response = mock.Mock()
+            response.status = 200
+        else:
+            try:
+                headers = {"X-OAuth-User": settings.OAUTH_USER,
+                           "If-Match": etag}
+                response, content = Spotseeker_DAO().deleteUL(url,
+                                                              headers)
+            except AttributeError:
+                raise NotConfigured("Must set OAUTH_USER in settings")
+        if response.status != 200:
+            raise DataFailureException(url, response.status, content)
 
     def all_spots(self):
         url = "/api/v1/spot/all"
@@ -36,13 +138,75 @@ class Spotseeker(object):
         """
 
         url = "/api/v1/spot?" + urlencode(query_tuple)
+
         response = Spotseeker_DAO().getURL(url)
 
         if response.status != 200:
-            raise DataFailureException(url, response.stauts, response.data)
+            raise DataFailureException(url, response.status, response.data)
         results = json.loads(response.data)
 
         return self._spots_from_data(results)
+
+    def put_spot(self, spot_id, spot_json, etag):
+        url = "/api/v1/spot/%s" % spot_id
+        implementation = Spotseeker_DAO().get_implementation()
+
+        if implementation.is_mock():
+            response = Spotseeker_DAO().putURL(url, {})
+            content = response.data
+        else:
+            try:
+                headers = {"X-OAuth-User": settings.OAUTH_USER,
+                           "If-Match": etag}
+                response, content = Spotseeker_DAO().putURL(url,
+                                                            headers,
+                                                            spot_json)
+            except AttributeError:
+                raise NotConfigured("Must set OAUTH_USER in settings")
+
+        if response.status != 200:
+            raise DataFailureException(url, response.status, content)
+        return response, content
+
+    def delete_spot(self, spot_id, etag):
+        url = "/api/v1/spot/%s" % spot_id
+        implementation = Spotseeker_DAO().get_implementation()
+
+        if implementation.is_mock():
+            response = Spotseeker_DAO().deleteURL(url)
+            content = response.data
+        else:
+            try:
+                headers = {"X-OAuth-User": settings.OAUTH_USER,
+                           "If-Match": etag}
+                response, content = Spotseeker_DAO().deleteURL(url, headers)
+            except AttributeError:
+                raise NotConfigured("Must set OAUTH_USER in settings")
+
+        if response.status != 200:
+            raise DataFailureException(url, response.status, content)
+        return response, content
+
+    def post_spot(self, spot_json):
+        url = "/api/v1/spot"
+        implementation = Spotseeker_DAO().get_implementation()
+
+        if implementation.is_mock():
+            response = Spotseeker_DAO().postURL(url)
+            content = response.data
+        else:
+            try:
+                headers = {"X-OAuth-User": settings.OAUTH_USER,
+                           "Content-Type": "application/json"}
+                response, content = Spotseeker_DAO().postURL(url,
+                                                             headers,
+                                                             spot_json)
+            except AttributeError:
+                raise NotConfigured("Must set OAUTH_USER in settings")
+
+        if response.status != 201:
+            raise DataFailureException(url, response.status, content)
+        return response
 
     def get_spot_by_id(self, spot_id):
         self._validate_spotid(spot_id)
@@ -114,7 +278,7 @@ class Spotseeker(object):
             spot_item.subcategory = item["subcategory"]
             spot_item.images = []
             if "images" in item and len(item["images"]) > 0:
-               spot_item.images = self._item_images_from_data(item["images"])
+                spot_item.images = self._item_images_from_data(item["images"])
             spot_item.extended_info = \
                 self._extended_info_from_data(item["extended_info"])
             spot_items.append(spot_item)
@@ -132,7 +296,8 @@ class Spotseeker(object):
             item_image.content_type = image["content-type"]
             item_image.width = image["width"]
             item_image.height = image["height"]
-            item_image.creation_date = parse_datetime(image["creation_date"])
+            item_image.creation_date = dateutil.parser.parse(
+                                       image["creation_date"])
             item_image.upload_user = image["upload_user"]
             item_image.upload_application = image["upload_application"]
             item_image.thumbnail_root = image["thumbnail_root"]
@@ -153,9 +318,10 @@ class Spotseeker(object):
             spot_image.content_type = image["content-type"]
             spot_image.width = image["width"]
             spot_image.height = image["height"]
-            spot_image.creation_date = parse_datetime(image["creation_date"])
+            spot_image.creation_date = dateutil.parser.parse(
+                                       image["creation_date"])
             spot_image.modification_date = \
-                parse_datetime(image["modification_date"])
+                dateutil.parser.parse(image["modification_date"])
             spot_image.upload_user = image["upload_user"]
             spot_image.upload_application = image["upload_application"]
             spot_image.thumbnail_root = image["thumbnail_root"]
@@ -207,3 +373,29 @@ class Spotseeker(object):
                                                   value=info_data[attribute])
             extended_info.append(spot_extended_info)
         return extended_info
+
+    def _get_image(self, image_app_type, parent_id, image_id, width=None):
+        if width is not None:
+            url = "/api/v1/%s/%s/image/%s/thumb/constrain/width:%s" % (
+                image_app_type,
+                parent_id,
+                image_id,
+                width)
+        else:
+            url = "/api/v1/%s/%s/image/%s" % (image_app_type,
+                                              parent_id,
+                                              image_id)
+        implementation = Spotseeker_DAO().get_implementation()
+        if implementation.is_mock():
+            response = Spotseeker_DAO().getURL(url)
+            content = response.data
+        else:
+            response, content = Spotseeker_DAO().getURL(url)
+
+        return response, content
+
+    def get_item_image(self, parent_id, image_id, width=None):
+        return self._get_image("item", parent_id, image_id, width)
+
+    def get_spot_image(self, parent_id, image_id, width=None):
+        return self._get_image("spot", parent_id, image_id, width)

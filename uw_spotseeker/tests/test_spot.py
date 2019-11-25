@@ -1,10 +1,13 @@
 from uw_spotseeker import Spotseeker
 from uw_spotseeker.utilities import fdao_spotseeker_override
-from django.utils.dateparse import parse_datetime
 from restclients_core.exceptions import (
     DataFailureException)
 from unittest import TestCase
+from PIL import Image
 import dateutil.parser
+import io
+import os
+import json
 
 
 @fdao_spotseeker_override
@@ -46,9 +49,11 @@ class SpotseekerTestSpot(TestCase):
         self.assertEqual(spot_data.images[0].width, 0)
         self.assertEqual(spot_data.images[0].height, 0)
         self.assertEqual(spot_data.images[0].creation_date,
-                         parse_datetime("Sun, 06 Nov 1994 08:49:37 GMT"))
+                         dateutil.parser.parse(
+                         "Sun, 06 Nov 1994 08:49:37 GMT"))
         self.assertEqual(spot_data.images[0].modification_date,
-                         parse_datetime("Mon, 07 Nov 1994 01:49:37 GMT"))
+                         dateutil.parser.parse(
+                         "Mon, 07 Nov 1994 01:49:37 GMT"))
         self.assertEqual(spot_data.images[0].upload_user,
                          "user name")
         self.assertEqual(spot_data.images[0].upload_application,
@@ -56,7 +61,7 @@ class SpotseekerTestSpot(TestCase):
         self.assertEqual(spot_data.images[0].thumbnail_root,
                          "/api/v1/spot/123/image/1/thumb")
         self.assertEqual(spot_data.images[0].description,
-                        "Information about the image")
+                         "Information about the image")
         self.assertEqual(spot_data.images[0].display_index, 0)
 
         self.assertEqual(len(spot_data.spot_availability), 7)
@@ -100,7 +105,7 @@ class SpotseekerTestSpot(TestCase):
         self.assertEqual(spot_data.manager, "Test Manager")
         self.assertEqual(spot_data.etag, "123456789")
         self.assertEqual(spot_data.last_modified,
-                         parse_datetime("2012-07-13T05:00:00+00:00"))
+                         dateutil.parser.parse("2012-07-13T05:00:00+00:00"))
 
         self.assertEqual(len(spot_data.images), 1)
         self.assertEqual(spot_data.images[0].image_id, "1")
@@ -110,9 +115,11 @@ class SpotseekerTestSpot(TestCase):
         self.assertEqual(spot_data.images[0].width, 0)
         self.assertEqual(spot_data.images[0].height, 0)
         self.assertEqual(spot_data.images[0].creation_date,
-                         parse_datetime("Sun, 06 Nov 1994 08:49:37 GMT"))
+                         dateutil.parser.parse(
+                         "Sun, 06 Nov 1994 08:49:37 GMT"))
         self.assertEqual(spot_data.images[0].modification_date,
-                         parse_datetime("Mon, 07 Nov 1994 01:49:37 GMT"))
+                         dateutil.parser.parse(
+                         "Mon, 07 Nov 1994 01:49:37 GMT"))
         self.assertEqual(spot_data.images[0].upload_user,
                          "user name")
         self.assertEqual(spot_data.images[0].upload_application,
@@ -135,10 +142,64 @@ class SpotseekerTestSpot(TestCase):
         self.assertRaises(DataFailureException,
                           spotseeker.get_spot_by_id, 999)
 
+    def test_post_spot(self):
+        spotseeker = Spotseeker()
+        spot_data = spotseeker.get_spot_by_id(1)
+        self.assertRaises(DataFailureException,
+                          spotseeker.post_spot, spot_data)
+
+    def test_delete_spot(self):
+        spotseeker = Spotseeker()
+        spot_data = spotseeker.get_spot_by_id(1)
+        response, content = spotseeker.delete_spot(1, "XXX")
+        result = json.loads(content)
+        self.assertEqual(spot_data.spot_id, result["id"])
+
+    def test_put_spot(self):
+        spotseeker = Spotseeker()
+        directory = os.path.dirname(__file__)
+        path = "../resources/spotseeker/file/api/v1/spot/1"
+        mock_path = os.path.join(directory, path)
+        with open(mock_path) as f:
+            spot_json = json.load(f)
+        response, content = spotseeker.put_spot(1, spot_json, "XXX")
+        self.assertEqual(json.loads(content.decode("utf-8")), spot_json)
+
     def test_building_list(self):
         spotseeker = Spotseeker()
         buildings = spotseeker.get_building_list("seattle")
         self.assertEqual(len(buildings), 43)
+
+    def test_get_image(self):
+        directory = os.path.dirname(__file__)
+        path = "../resources/spotseeker/file/api/v1/spot/20/image/1"
+        mock_path = os.path.join(directory, path)
+        with open(mock_path, "rb") as f:
+            expected_img = Image.open(io.BytesIO(bytearray(f.read())))
+
+        spotseeker = Spotseeker()
+        response, content = spotseeker.get_spot_image(20, 1)
+        byte_img = bytearray(response.data)
+        img = Image.open(io.BytesIO(byte_img))
+        self.assertEqual(img, expected_img)
+
+    def test_post_image(self):
+        spotseeker = Spotseeker()
+        response = spotseeker.post_image(1, "")
+        self.assertEqual(response, '')
+
+    def test_delete_image(self):
+        spotseeker = Spotseeker()
+        response = spotseeker.delete_image(20, 1, "XXX")
+
+    def test_post_item_image(self):
+        spotseeker = Spotseeker()
+        response = spotseeker.post_item_image(1, "")
+        self.assertEqual(response, '')
+
+    def test_delete_item_image(self):
+        spotseeker = Spotseeker()
+        response = spotseeker.delete_item_image(20, 1, "XXX")
 
     def _assert_spot_types(self, spot_types, type_stings):
         spot_types = [spot_type.name for spot_type in spot_types]
