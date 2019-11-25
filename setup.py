@@ -28,6 +28,7 @@ setup(
                       'mock',
                       'commonconf',
                       'requests',
+                      'configparser',
                       'requests_oauthlib',
                       'six',
                      ],
