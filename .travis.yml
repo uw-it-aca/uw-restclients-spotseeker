@@ -11,6 +11,7 @@ before_script:
 - pip install nose2
 - pip install coverage
 - pip install commonconf
+- pip install configparser
 - pip install python-coveralls
 script:
 - pep8 uw_spotseeker
