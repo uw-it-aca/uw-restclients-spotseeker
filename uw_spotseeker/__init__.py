@@ -127,7 +127,7 @@ class Spotseeker(object):
         if response.status != 200:
             raise DataFailureException(url, response.status, response.data)
 
-        results = json.loads(response.data)
+        results = json.loads(response.data.decode('utf-8'))
 
         spots = self._spots_from_data(results)
         return spots
@@ -143,7 +143,7 @@ class Spotseeker(object):
 
         if response.status != 200:
             raise DataFailureException(url, response.status, response.data)
-        results = json.loads(response.data)
+        results = json.loads(response.data.decode('utf-8'))
 
         return self._spots_from_data(results)
 
@@ -216,7 +216,7 @@ class Spotseeker(object):
 
         if response.status != 200:
             raise DataFailureException(url, response.status, response.data)
-        return self._spot_from_data(json.loads(response.data))
+        return self._spot_from_data(json.loads(response.data.decode('utf-8')))
 
     def get_building_list(self, campus, app_type=None):
         url = "/api/v1/buildings?extended_info:campus=" + campus
@@ -227,7 +227,7 @@ class Spotseeker(object):
 
         if response.status != 200:
             raise DataFailureException(url, response.status, response.data)
-        return json.loads(response.data)
+        return json.loads(response.data.decode('utf-8'))
 
     def _spots_from_data(self, spots_data):
         return [self._spot_from_data(spot_data) for spot_data in spots_data]
