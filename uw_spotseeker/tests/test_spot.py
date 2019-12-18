@@ -152,7 +152,7 @@ class SpotseekerTestSpot(TestCase):
         spotseeker = Spotseeker()
         spot_data = spotseeker.get_spot_by_id(1)
         response, content = spotseeker.delete_spot(1, "XXX")
-        result = json.loads(content)
+        result = json.loads(content.decode('utf-8'))
         self.assertEqual(spot_data.spot_id, result["id"])
 
     def test_put_spot(self):
