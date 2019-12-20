@@ -26,6 +26,7 @@ setup(
                       'python-dateutil',
                       'Pillow',
                       'mock',
+                      'oauth2',
                       'commonconf',
                       'requests',
                       'requests_oauthlib',
