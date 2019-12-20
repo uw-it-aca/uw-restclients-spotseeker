@@ -38,7 +38,7 @@ class Spotseeker_LiveDAO(LiveDAO):
         response = self.process_response(resp, content)
         return response
 
-    def process_response(headers, data):
+    def process_response(self, headers, data):
         response = MockHTTP()
         response.status = int(headers['status'])
         response.data = data
