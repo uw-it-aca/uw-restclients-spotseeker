@@ -3,7 +3,7 @@ Contains UW Spotseeker DAO implementations.
 """
 from restclients_core.dao import DAO, LiveDAO
 from os.path import abspath, dirname
-from django.conf import settings
+from commonconf import settings
 import os
 import oauth2
 
