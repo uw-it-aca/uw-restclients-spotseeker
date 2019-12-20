@@ -2,6 +2,7 @@
 Contains UW Spotseeker DAO implementations.
 """
 from restclients_core.dao import DAO, LiveDAO
+from uw_spotseeker.mock_http import MockHTTP
 from os.path import abspath, dirname
 from commonconf import settings
 import os
@@ -34,4 +35,12 @@ class Spotseeker_LiveDAO(LiveDAO):
                                        method=method,
                                        body=body,
                                        headers=headers)
-        return (resp, content)
+        response = self.process_response(resp, content)
+        return response
+
+    def process_response(headers, data):
+        response = MockHTTP()
+        response.status = int(headers['status'])
+        response.data = data
+        response.headers = headers
+        return response
