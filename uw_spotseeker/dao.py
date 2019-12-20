@@ -34,4 +34,4 @@ class Spotseeker_LiveDAO(LiveDAO):
                                        method=method,
                                        body=body,
                                        headers=headers)
-        return resp
+        return content
