@@ -3,6 +3,7 @@ Contains UW Spotseeker DAO implementations.
 """
 from restclients_core.dao import DAO, LiveDAO
 from os.path import abspath, dirname
+from django.conf import settings
 import os
 import oauth2
 
@@ -24,7 +25,6 @@ class Spotseeker_LiveDAO(LiveDAO):
         consumer = oauth2.Consumer(key=settings.SPOTSEEKER_OAUTH_KEY,
                                    secret=settings.SPOTSEEKER_OAUTH_SECRET)
         client = oauth2.Client(consumer)
-        url = host + url
 
         resp, content = client.request(url,
                                        method=method,
