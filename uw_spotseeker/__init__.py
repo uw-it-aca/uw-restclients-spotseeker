@@ -95,7 +95,7 @@ class Spotseeker(object):
                 headers = {"X-OAuth-User": settings.OAUTH_USER}
                 auth = OAuth1(settings.SPOTSEEKER_OAUTH_KEY,
                               settings.SPOTSEEKER_OAUTH_SECRET)
-                full_url = settings.SPOTSEEKER_HOST + "/" + url
+                full_url = settings.SPOTSEEKER_HOST + url
                 files = {'image': ('image.jpg', StringIO(image))}
 
                 r = requests.post(full_url,
