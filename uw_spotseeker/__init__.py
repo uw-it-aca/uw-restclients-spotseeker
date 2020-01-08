@@ -16,6 +16,7 @@ from commonconf import settings
 from commonconf.exceptions import NotConfigured
 import json
 import dateutil.parser
+import io
 import re
 import six
 import datetime
