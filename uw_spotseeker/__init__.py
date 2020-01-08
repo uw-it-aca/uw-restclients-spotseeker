@@ -73,7 +73,7 @@ class Spotseeker(object):
             try:
                 headers = {"X-OAuth-User": settings.OAUTH_USER,
                            "If-Match": etag}
-                response = dao.deleteURL(url, headers)
+                response = Spotseeker_DAO().deleteURL(url, headers)
                 content = response.data
 
             except AttributeError:
@@ -118,7 +118,7 @@ class Spotseeker(object):
             try:
                 headers = {"X-OAuth-User": settings.OAUTH_USER,
                            "If-Match": etag}
-                response = Spotseeker_DAO().deleteUL(url, headers)
+                response = Spotseeker_DAO().deleteURL(url, headers)
                 content = response.data
             except AttributeError:
                 raise NotConfigured("Must set OAUTH_USER in settings")
