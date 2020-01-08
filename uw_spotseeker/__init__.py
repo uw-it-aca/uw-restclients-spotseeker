@@ -23,7 +23,7 @@ import requests
 import mock
 from requests_oauthlib import OAuth1
 try:
-    from StringIO import StringIO ## for Python 2
+    from StringIO import StringIO
 except ImportError:
     from io import StringIO
 

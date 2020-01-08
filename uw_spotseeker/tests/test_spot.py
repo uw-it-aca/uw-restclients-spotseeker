@@ -8,7 +8,7 @@ import dateutil.parser
 import os
 import json
 try:
-    from BytesIO import BytesIO ## for Python 2
+    from BytesIO import BytesIO
 except ImportError:
     from io import BytesIO
 
