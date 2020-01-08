@@ -16,13 +16,16 @@ from commonconf import settings
 from commonconf.exceptions import NotConfigured
 import json
 import dateutil.parser
-import io
 import re
 import six
 import datetime
 import requests
 import mock
 from requests_oauthlib import OAuth1
+try:
+    from StringIO import StringIO ## for Python 2
+except ImportError:
+    from io import StringIO
 
 try:
     from urllib import urlencode
@@ -46,7 +49,7 @@ class Spotseeker(object):
                 auth = OAuth1(settings.SPOTSEEKER_OAUTH_KEY,
                               settings.SPOTSEEKER_OAUTH_SECRET)
                 full_url = settings.SPOTSEEKER_HOST + "/" + url
-                files = {'image': ('image.jpg', io.StringIO(unicode(image)))}
+                files = {'image': ('image.jpg', StringIO(image))}
 
                 response = requests.post(full_url,
                                          files=files,
@@ -93,7 +96,7 @@ class Spotseeker(object):
                 auth = OAuth1(settings.SPOTSEEKER_OAUTH_KEY,
                               settings.SPOTSEEKER_OAUTH_SECRET)
                 full_url = settings.SPOTSEEKER_HOST + "/" + url
-                files = {'image': ('image.jpg', io.StringIO(image))}
+                files = {'image': ('image.jpg', StringIO(image))}
 
                 r = requests.post(full_url,
                                   files=files,

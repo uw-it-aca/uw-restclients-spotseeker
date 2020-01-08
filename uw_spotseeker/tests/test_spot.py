@@ -5,9 +5,12 @@ from restclients_core.exceptions import (
 from unittest import TestCase
 from PIL import Image
 import dateutil.parser
-import io
 import os
 import json
+try:
+    from BytesIO import BytesIO ## for Python 2
+except ImportError:
+    from io import BytesIO
 
 
 @fdao_spotseeker_override
@@ -175,12 +178,12 @@ class SpotseekerTestSpot(TestCase):
         path = "../resources/spotseeker/file/api/v1/spot/20/image/1"
         mock_path = os.path.join(directory, path)
         with open(mock_path, "rb") as f:
-            expected_img = Image.open(io.BytesIO(bytearray(f.read())))
+            expected_img = Image.open(BytesIO(bytearray(f.read())))
 
         spotseeker = Spotseeker()
         response, content = spotseeker.get_spot_image(20, 1)
         byte_img = bytearray(response.data)
-        img = Image.open(io.BytesIO(byte_img))
+        img = Image.open(BytesIO(byte_img))
         self.assertEqual(img, expected_img)
 
     def test_post_image(self):
