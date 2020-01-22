@@ -22,6 +22,10 @@ import datetime
 import requests
 import mock
 from requests_oauthlib import OAuth1
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO
 
 try:
     from urllib import urlencode
@@ -45,7 +49,7 @@ class Spotseeker(object):
                 auth = OAuth1(settings.SPOTSEEKER_OAUTH_KEY,
                               settings.SPOTSEEKER_OAUTH_SECRET)
                 full_url = settings.SPOTSEEKER_HOST + "/" + url
-                files = {'image': ('image.jpg', io.StringIO(image))}
+                files = {'image': ('image.jpg', StringIO(image))}
 
                 response = requests.post(full_url,
                                          files=files,
@@ -69,7 +73,8 @@ class Spotseeker(object):
             try:
                 headers = {"X-OAuth-User": settings.OAUTH_USER,
                            "If-Match": etag}
-                response, content = dao.deleteURL(url, headers)
+                response = Spotseeker_DAO().deleteURL(url, headers)
+                content = response.data
 
             except AttributeError:
                 raise NotConfigured("Must set OAUTH_USER in settings")
@@ -90,8 +95,8 @@ class Spotseeker(object):
                 headers = {"X-OAuth-User": settings.OAUTH_USER}
                 auth = OAuth1(settings.SPOTSEEKER_OAUTH_KEY,
                               settings.SPOTSEEKER_OAUTH_SECRET)
-                full_url = settings.SPOTSEEKER_HOST + "/" + url
-                files = {'image': ('image.jpg', io.StringIO(image))}
+                full_url = settings.SPOTSEEKER_HOST + url
+                files = {'image': ('image.jpg', StringIO(image))}
 
                 r = requests.post(full_url,
                                   files=files,
@@ -113,8 +118,8 @@ class Spotseeker(object):
             try:
                 headers = {"X-OAuth-User": settings.OAUTH_USER,
                            "If-Match": etag}
-                response, content = Spotseeker_DAO().deleteUL(url,
-                                                              headers)
+                response = Spotseeker_DAO().deleteURL(url, headers)
+                content = response.data
             except AttributeError:
                 raise NotConfigured("Must set OAUTH_USER in settings")
         if response.status != 200:
@@ -158,9 +163,10 @@ class Spotseeker(object):
             try:
                 headers = {"X-OAuth-User": settings.OAUTH_USER,
                            "If-Match": etag}
-                response, content = Spotseeker_DAO().putURL(url,
-                                                            headers,
-                                                            spot_json)
+                response = Spotseeker_DAO().putURL(url,
+                                                   headers,
+                                                   spot_json)
+                content = response.data
             except AttributeError:
                 raise NotConfigured("Must set OAUTH_USER in settings")
 
@@ -179,7 +185,8 @@ class Spotseeker(object):
             try:
                 headers = {"X-OAuth-User": settings.OAUTH_USER,
                            "If-Match": etag}
-                response, content = Spotseeker_DAO().deleteURL(url, headers)
+                response = Spotseeker_DAO().deleteURL(url, headers)
+                content = response.data
             except AttributeError:
                 raise NotConfigured("Must set OAUTH_USER in settings")
 
@@ -198,9 +205,10 @@ class Spotseeker(object):
             try:
                 headers = {"X-OAuth-User": settings.OAUTH_USER,
                            "Content-Type": "application/json"}
-                response, content = Spotseeker_DAO().postURL(url,
-                                                             headers,
-                                                             spot_json)
+                response = Spotseeker_DAO().postURL(url,
+                                                    headers,
+                                                    spot_json)
+                content = response.data
             except AttributeError:
                 raise NotConfigured("Must set OAUTH_USER in settings")
 
@@ -390,7 +398,8 @@ class Spotseeker(object):
             response = Spotseeker_DAO().getURL(url)
             content = response.data
         else:
-            response, content = Spotseeker_DAO().getURL(url)
+            response = Spotseeker_DAO().getURL(url)
+            content = response.data
 
         return response, content
 
