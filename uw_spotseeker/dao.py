@@ -2,7 +2,7 @@
 Contains UW Spotseeker DAO implementations.
 """
 from restclients_core.dao import DAO, LiveDAO
-from uw_spotseeker.mock_http import MockHTTP
+from restclients_core.models import MockHTTP
 from os.path import abspath, dirname
 from commonconf import settings
 import os
