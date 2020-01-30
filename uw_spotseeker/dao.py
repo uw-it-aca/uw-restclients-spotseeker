@@ -33,7 +33,7 @@ class Spotseeker_LiveDAO(LiveDAO):
 
         resp, content = client.request(url,
                                        method=method,
-                                       body=body,
+                                       body=bytes(body, "utf-8"),
                                        headers=headers)
         response = self.process_response(resp, content)
         return response
