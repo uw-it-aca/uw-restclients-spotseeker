@@ -5,6 +5,7 @@ from restclients_core.dao import DAO, LiveDAO
 from restclients_core.models import MockHTTP
 from os.path import abspath, dirname
 from commonconf import settings
+import base64
 import os
 import oauth2
 
@@ -33,7 +34,7 @@ class Spotseeker_LiveDAO(LiveDAO):
 
         resp, content = client.request(url,
                                        method=method,
-                                       body=bytes(body, "utf-8"),
+                                       body=base64.b64encode(body),
                                        headers=headers)
         response = self.process_response(resp, content)
         return response
