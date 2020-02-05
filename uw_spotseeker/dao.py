@@ -25,9 +25,9 @@ class Spotseeker_DAO(DAO):
 class Spotseeker_LiveDAO(LiveDAO):
     def load(self, method, url, headers, body):
         if body is None:
-            body = bytes('', 'utf-8')
-        else:
-            body = base64.b64encode(body.encode())
+            body = ''
+
+        body = bytes(body, "utf-8")
 
         consumer = oauth2.Consumer(key=settings.SPOTSEEKER_OAUTH_KEY,
                                    secret=settings.SPOTSEEKER_OAUTH_SECRET)
