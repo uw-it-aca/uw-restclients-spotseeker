@@ -34,7 +34,7 @@ class Spotseeker_LiveDAO(LiveDAO):
 
         resp, content = client.request(url,
                                        method=method,
-                                       body=base64.b64encode(body),
+                                       body=base64.b64encode(body.encode()),
                                        headers=headers)
         response = self.process_response(resp, content)
         return response
