@@ -22,7 +22,7 @@ setup(
     author="UW-IT AXDD",
     author_email="aca-it@uw.edu",
     include_package_data=True,
-    install_requires=['UW-RestClients-Core',
+    install_requires=['UW-RestClients-Core<1.0,>=0.9',
                       'python-dateutil',
                       'Pillow',
                       'mock',
