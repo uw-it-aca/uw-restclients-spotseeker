@@ -216,6 +216,14 @@ class Spotseeker(object):
             raise DataFailureException(url, response.status, content)
         return response
 
+    def get_schema(self):
+        url = "/api/v1/schema"
+        response = Spotseeker_DAO().getURL(url)
+
+        if response.status != 200:
+            raise DataFailureException(url, response.status, response.data)
+        return json.loads(response.data.decode('utf-8'))
+
     def get_spot_by_id(self, spot_id):
         self._validate_spotid(spot_id)
 
