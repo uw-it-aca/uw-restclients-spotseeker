@@ -10,7 +10,7 @@ import os
 if __name__ == '__main__':
     path = abspath(os.path.join(dirname(__file__),
                                 "..", "conf", "test.conf"))
-    use_configparser_backend(path, 'SPOTSEEKER')
+    use_configparser_backend(path, 'Spotseeker')
 
     from nose2 import discover
     discover()
