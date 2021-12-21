@@ -22,7 +22,8 @@
 ---
 name: 'Lint and Test'
 
-env: uw_spotseeker
+env: 
+  APP_NAME: uw_spotseeker
 
 on:
   push:
