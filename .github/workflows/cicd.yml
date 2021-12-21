@@ -1,3 +1,25 @@
+#
+# Example GitHub Actions config for UW-IT AXD2 app testing and publishing to PyPi
+#
+# Preconditions:
+#
+#  1) Application test suite is kicked off by APP_NAME/test.py
+#
+#  2) Application contains a setup.py file
+#
+#  3) Application repo has access to the required secret
+#     at https://github.com/organizations/uw-it-aca/settings/secrets:
+#
+#     PYPI_API_TOKEN
+#
+# To adapt this config to a specific Python app:
+#
+#  1) Set APP_NAME to the name of the package name/directory.
+#
+#  2) Verify that the lists of branches for push/pull_request is appropriate,
+#     and add other branch names if needed.
+#
+---
 name: 'Lint and Test'
 
 env: uw_spotseeker
