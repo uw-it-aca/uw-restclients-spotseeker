@@ -6,7 +6,6 @@ See the README on `GitHub
 <https://github.com/uw-it-aca/uw-restclients-spotseeker>`_.
 """
 
-# The VERSION file is created by travis-ci, based on the tag name
 version_path = 'uw_spotseeker/VERSION'
 VERSION = open(os.path.join(os.path.dirname(__file__), version_path)).read()
 VERSION = VERSION.replace("\n", "")
@@ -22,7 +21,7 @@ setup(
     author="UW-IT AXDD",
     author_email="aca-it@uw.edu",
     include_package_data=True,
-    install_requires=['UW-RestClients-Core~=1.3',
+    install_requires=['UW-RestClients-Core',
                       'python-dateutil',
                       'Pillow',
                       'mock',
