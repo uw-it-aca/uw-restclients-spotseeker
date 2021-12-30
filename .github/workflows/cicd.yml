@@ -59,13 +59,13 @@ jobs:
         with:
           app_name: ${APP_NAME}
 
-      # - name: Run Tests
-      #   run: |
-      #     python -m compileall ${APP_NAME}/
-      #     coverage run ${APP_NAME}/test.py -v
+      - name: Run Tests
+        run: |
+          python -m compileall ${APP_NAME}/
+          coverage run ${APP_NAME}/test.py -v
       
-      # - name: Report Test Coverage
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #   shell: bash
-      #   run: coveralls
+      - name: Report Test Coverage
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: coveralls
