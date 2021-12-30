@@ -129,7 +129,7 @@ class Spotseeker(object):
         response = Spotseeker_DAO().getURL(url)
 
         if response.status != 200:
-            raise DataFailureException(url, response.status, str(response.data))
+            raise DataFailureException(url,response.status, response.data)
 
         results = json.loads(response.data.decode('utf-8'))
 
@@ -146,7 +146,7 @@ class Spotseeker(object):
         response = Spotseeker_DAO().getURL(url)
 
         if response.status != 200:
-            raise DataFailureException(url, response.status, str(response.data))
+            raise DataFailureException(url, response.status, response.data)
         results = json.loads(response.data.decode('utf-8'))
 
         return self._spots_from_data(results)
@@ -222,7 +222,7 @@ class Spotseeker(object):
         response = Spotseeker_DAO().getURL(url)
 
         if response.status != 200:
-            raise DataFailureException(url, response.status, str(response.data))
+            raise DataFailureException(url, response.status, response.data)
         return self._spot_from_data(json.loads(response.data.decode('utf-8')))
 
     def get_building_list(self, campus, app_type=None):
@@ -233,7 +233,7 @@ class Spotseeker(object):
         response = Spotseeker_DAO().getURL(url)
 
         if response.status != 200:
-            raise DataFailureException(url, response.status, str(response.data))
+            raise DataFailureException(url, response.status, response.data)
         return json.loads(response.data.decode('utf-8'))
 
     def _spots_from_data(self, spots_data):
