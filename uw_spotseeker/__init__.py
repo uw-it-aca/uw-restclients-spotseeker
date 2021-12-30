@@ -129,7 +129,7 @@ class Spotseeker(object):
         response = Spotseeker_DAO().getURL(url)
 
         if response.status != 200:
-            raise DataFailureException(url,response.status, response.data)
+            raise DataFailureException(url, response.status, response.data)
 
         results = json.loads(response.data.decode('utf-8'))
 
