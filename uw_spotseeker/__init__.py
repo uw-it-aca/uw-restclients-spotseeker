@@ -24,12 +24,7 @@ import six
 import datetime
 import requests
 import mock
-from requests_oauthlib import OAuth1
-
-try:
-    from urllib import urlencode
-except ImportError:
-    from urllib.parse import urlencode
+from urllib.parse import urlencode
 
 
 class Spotseeker(object):
@@ -45,8 +40,7 @@ class Spotseeker(object):
         else:
             try:
                 headers = {"X-OAuth-User": settings.OAUTH_USER}
-                auth = OAuth1(settings.SPOTSEEKER_OAUTH_KEY,
-                              settings.SPOTSEEKER_OAUTH_SECRET)
+                auth = Spotseeker_DAO().get_auth_header()
                 full_url = settings.RESTCLIENTS_SPOTSEEKER_HOST + "/" + url
                 files = {'image': ('image.jpg', image)}
 
@@ -92,8 +86,7 @@ class Spotseeker(object):
         else:
             try:
                 headers = {"X-OAuth-User": settings.OAUTH_USER}
-                auth = OAuth1(settings.SPOTSEEKER_OAUTH_KEY,
-                              settings.SPOTSEEKER_OAUTH_SECRET)
+                auth = Spotseeker_DAO().get_auth_header()
                 full_url = settings.RESTCLIENTS_SPOTSEEKER_HOST + url
                 files = {'image': ('image.jpg', image)}
 
