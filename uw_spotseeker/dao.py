@@ -59,7 +59,7 @@ class Spotseeker_DAO(MockDAO, DAO):
 
     def _get_live_implementation(self):
         return Spotseeker_LiveDAO(self.service_name(), self)
-    
+
     def _get_mock_implementation(self):
         return self
 
@@ -70,10 +70,10 @@ class Spotseeker_DAO(MockDAO, DAO):
     def _get_token_scope(self, token: str) -> str:
         # get string after _token_, allows underscores in scope
         return token.split('_token_')[1].replace('_', ' ')
-    
+
     def get_access_token(self) -> str:
         scope = settings.SPOTSEEKER_OAUTH_SCOPE
-        
+
         # ex: dummy_scout_token_read_write
         return f'dummy_{settings.APP_NAME}_token_{scope.replace(" ", "_")}'
 
@@ -115,7 +115,7 @@ class Spotseeker_LiveDAO(LiveDAO):
     def set_token_in_cache(self, token: str, expiry: int) -> None:
         # set cache key to be app name
         key_name = settings.APP_NAME
-        cache.set(key_name, token, timeout = expiry - self.EPSILON)
+        cache.set(key_name, token, timeout=expiry - self.EPSILON)
 
     def get_access_token(self) -> str:
         headers = {
