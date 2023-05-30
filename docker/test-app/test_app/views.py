@@ -12,6 +12,7 @@ import logging
 logging.basicConfig()
 logger = logging.getLogger("test_app")
 
+
 # functional view to return list of spots
 def get_spots(request):
     spotseeker = Spotseeker()
