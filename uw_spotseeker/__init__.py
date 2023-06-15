@@ -32,7 +32,7 @@ logger = logging.getLogger(__name__)
 
 class Spotseeker(object):
 
-    def post_image(self, spot_id, image) -> bytes:
+    def post_image(self, spot_id, image: bytes) -> bytes:
         url = "/api/v1/spot/%s/image" % spot_id
 
         headers = {"X-OAuth-User": settings.OAUTH_USER}
@@ -41,10 +41,10 @@ class Spotseeker(object):
         try:
             response = Spotseeker_DAO().postURL(url, headers)
             status = response.status
-            if status != 201:
+            if status not in [200, 201]:
                 raise DataFailureException(url,
                                            status,
-                                           response.reason)
+                                           getattr(response, 'reason', None))
         except AttributeError:
             raise NotConfigured("must set credential in settings")
 
@@ -66,7 +66,7 @@ class Spotseeker(object):
         if status != 200:
             raise DataFailureException(url, status, content)
 
-    def post_item_image(self, item_id, image) -> dict:
+    def post_item_image(self, item_id, image: bytes) -> dict:
         url = "/api/v1/item/%s/image" % item_id
 
         headers = {"X-OAuth-User": settings.OAUTH_USER}
