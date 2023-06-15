@@ -12,7 +12,6 @@ services:
     ports:
       - "${PORT:-8003}:8000"
     environment:
-      # AUTH: SAML_MOCK
       ENV: localdev
       APP_NAME: ${APP_NAME:-test-app}
       OAUTH_USER: ${OAUTH_USER:-javerage}
