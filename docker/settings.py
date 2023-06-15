@@ -25,7 +25,9 @@ SPOTSEEKER_OAUTH_SCOPE = os.getenv("SCOPE", READ_SCOPE)
 
 OAUTH_USER = os.getenv("OAUTH_USER", "")
 
-if DEBUG:
+DEBUG_CACHING = os.getenv("DEBUG_CACHING", "True") == "True"
+
+if DEBUG and not DEBUG_CACHING:
     CACHES = {
         "default": {
             "BACKEND": "django.core.cache.backends.dummy.DummyCache",
