@@ -2,8 +2,10 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from django.http import HttpResponse
-from django.views import View
-from django.views.decorators.csrf import csrf_exempt
+from django.views.generic.base import View, TemplateView
+from django.shortcuts import render
+from django.conf import settings
+from django.core.cache import cache
 from uw_spotseeker import Spotseeker
 import json
 import logging
@@ -35,40 +37,102 @@ response = requests.get('https://picsum.photos/id/237/200/300')
 example_img = response.content
 
 
-# functional view to return list of spots
+class BuildingsView(TemplateView):
+    template_name = "base.html"
+
+    def get_context_data(self, **kwargs):
+        context = super(BuildingsView, self).get_context_data(**kwargs)
+        spotseeker = Spotseeker()
+        buildings = spotseeker.get_building_list(kwargs.get('campus'),
+                                                 kwargs.get('app_type'))
+        context['data'] = buildings
+        context['title'] = "All Buildings"
+        context['scope'] = settings.SPOTSEEKER_OAUTH_SCOPE
+
+        token = cache.get(settings.APP_NAME)
+        if token is None:
+            context['token'] = 'no token in cache'
+        else:
+            context['token'] = token
+        return context
+
+    def get(self, request, *args, **kwargs):
+        campus = request.GET.get('campus', 'seattle')
+        app_type = request.GET.get('app_type')
+        context = self.get_context_data(**kwargs, campus=campus,
+                                        app_type=app_type)
+        return render(request, self.template_name, context)
 
 
-@csrf_exempt
-def get_buildings(request) -> HttpResponse:
-    campus = request.GET.get('campus', 'seattle')
-    app_type = request.GET.get('app_type')
+class AllSpotsView(TemplateView):
+    template_name = "base.html"
 
-    spotseeker = Spotseeker()
-    buildings = spotseeker.get_building_list(campus, app_type)
-    return HttpResponse(buildings)
+    def get_context_data(self, **kwargs):
+        context = super(AllSpotsView, self).get_context_data(**kwargs)
+        spotseeker = Spotseeker()
+        spots = spotseeker.all_spots()
+        context['data'] = [str(spot) for spot in spots]
+        context['title'] = "All Spots"
+        context['scope'] = settings.SPOTSEEKER_OAUTH_SCOPE
+        token = cache.get(settings.APP_NAME)
 
+        if token is None:
+            context['token'] = 'no token in cache'
+        else:
+            context['token'] = token
+        return context
 
-@csrf_exempt
-def get_spots(request) -> HttpResponse:
-    spotseeker = Spotseeker()
-    spots = spotseeker.all_spots()
-    return HttpResponse(spots)
-
-
-@csrf_exempt
-def get_spots_by_search(request) -> HttpResponse:
-    query = request.GET.dict()
-
-    spotseeker = Spotseeker()
-    spots = spotseeker.search_spots(query)
-    return HttpResponse(spots)
+    def get(self, request, *args, **kwargs):
+        context = self.get_context_data(**kwargs)
+        return render(request, self.template_name, context)
 
 
-class SpotView(View):
+class SearchSpotsView(TemplateView):
+    template_name = "base.html"
+
+    def get_context_data(self, **kwargs):
+        context = super(SearchSpotsView, self).get_context_data(**kwargs)
+        spotseeker = Spotseeker()
+        spots = spotseeker.search_spots(kwargs.get('query'))
+        context['data'] = [str(spot) for spot in spots]
+        context['title'] = "Search Spots"
+        context['scope'] = settings.SPOTSEEKER_OAUTH_SCOPE
+
+        token = cache.get(settings.APP_NAME)
+        if token is None:
+            context['token'] = 'no token in cache'
+        else:
+            context['token'] = token
+        return context
+
+    def get(self, request, *args, **kwargs):
+        query = request.GET.dict()
+        context = self.get_context_data(**kwargs, query=query)
+        return render(request, self.template_name, context)
+
+
+class SpotView(TemplateView):
+    template_name = "base.html"
+
+    def get_context_data(self, **kwargs):
+        context = super(SpotView, self).get_context_data(**kwargs)
+        spot = kwargs.get('spot')
+        context['data'] = str(spot)
+        context['title'] = "Spot"
+        context['scope'] = settings.SPOTSEEKER_OAUTH_SCOPE
+
+        token = cache.get(settings.APP_NAME, None)
+        if token is None:
+            context['token'] = 'no token in cache'
+        else:
+            context['token'] = token
+        return context
+
     def get(self, request, spot_id):
         spotseeker = Spotseeker()
         spots = spotseeker.get_spot_by_id(spot_id)
-        return HttpResponse(spots)
+        return render(request, self.template_name,
+                      self.get_context_data(spot=spots))
 
     def post(self, request):
         body = request.body

@@ -19,6 +19,6 @@ services:
       RESTCLIENTS_SPOTSEEKER_DAO_CLASS: ${RESTCLIENTS_SPOTSEEKER_DAO_CLASS:-Mock}
       CREDENTIAL: ${CREDENTIAL:-None}
       SCOPE: ${SCOPE:-read}
-      DEBUG_CACHING: ${DEBUG_CACHING:-False}
+      DEBUG_CACHING: ${DEBUG_CACHING:-True}
     stdin_open: true
     tty: true
