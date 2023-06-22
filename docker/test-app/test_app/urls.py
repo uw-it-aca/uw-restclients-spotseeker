@@ -3,8 +3,8 @@
 
 from django.urls import path
 from django.views.decorators.csrf import csrf_exempt
-from .views import get_spots, get_buildings, get_spots_by_search, \
-     SpotView, ItemImageView, SpotImageView
+from .views import SearchSpotsView, SpotView, ItemImageView, SpotImageView, \
+     AllSpotsView, BuildingsView
 
 urlpatterns = [
     path("spot/<int:spot_id>/image/<int:img_id>",
@@ -18,9 +18,9 @@ urlpatterns = [
     path("spot/<int:spot_id>", csrf_exempt(SpotView.as_view())),
     path("spot", csrf_exempt(SpotView.as_view())),
 
-    path("all", get_spots),
+    path("all", AllSpotsView.as_view()),
 
-    path("buildings", get_buildings, name="get_buildings"),
+    path("buildings", BuildingsView.as_view(), name="get_buildings"),
 
-    path("search", get_spots_by_search, name="get_spots_by_search"),
+    path("search", SearchSpotsView.as_view(), name="get_spots_by_search"),
 ]
