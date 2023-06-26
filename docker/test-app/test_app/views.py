@@ -191,33 +191,3 @@ class SpotImageView(View):
         etag = resp.headers.get('etag', None)
         response = spotseeker.delete_image(spot_id, img_id, etag)
         return HttpResponse(status=200)
-
-
-class ItemImageView(View):
-    def get(self, request, item_id, img_id):
-        spotseeker = Spotseeker()
-        resp, content = spotseeker.get_item_image(item_id, img_id)
-
-        etag = resp.headers.get('etag', None)
-        response = HttpResponse(content,
-                                content_type=resp.headers['content-type'])
-        response['etag'] = etag
-        return response
-
-    def post(self, request, item_id):
-        img = request.FILES['file']
-        if not img:
-            img = example_img
-
-        spotseeker = Spotseeker()
-        data = spotseeker.post_item_image(item_id, img)
-        return HttpResponse(data)
-
-    def delete(self, request, item_id, img_id):
-        spotseeker = Spotseeker()
-
-        resp, _ = spotseeker.get_item_image(item_id, img_id)
-        etag = resp.etag
-
-        spotseeker.delete_item_image(item_id, img_id, etag)
-        return HttpResponse(status=200)
