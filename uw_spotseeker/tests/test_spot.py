@@ -4,7 +4,7 @@
 from uw_spotseeker import Spotseeker
 from uw_spotseeker.utilities import fdao_spotseeker_override
 from restclients_core.exceptions import DataFailureException
-from django.test import TestCase
+from unittest import TestCase
 from PIL import Image
 import dateutil.parser
 import os
