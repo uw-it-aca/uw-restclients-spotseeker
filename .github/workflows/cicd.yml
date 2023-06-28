@@ -3,7 +3,7 @@
 #
 # Preconditions:
 #
-#  1) Application test suite is kicked off by APP_NAME/test.py
+#  1) Application test suite is kicked off by DIR_NAME/test.py
 #
 #  2) Application contains a setup.py file
 #
@@ -14,7 +14,7 @@
 #
 # To adapt this config to a specific Python app:
 #
-#  1) Set APP_NAME to the name of the package name/directory.
+#  1) Set DIR_NAME to the name of the package name/directory.
 #
 #  2) Verify that the lists of branches for push/pull_request is appropriate,
 #     and add other branch names if needed.
@@ -23,7 +23,7 @@
 name: 'Lint and Test'
 
 env: 
-  APP_NAME: uw_spotseeker
+  DIR_NAME: uw_spotseeker
 
 on:
   push:
@@ -57,12 +57,12 @@ jobs:
       - name: Run Python Linters
         uses: uw-it-aca/actions/python-linters@main
         with:
-          app_name: ${APP_NAME}
+          app_name: ${DIR_NAME}
 
       - name: Run Tests
         run: |
-          python -m compileall ${APP_NAME}/
-          coverage run ${APP_NAME}/test.py -v
+          python -m compileall ${DIR_NAME}/
+          coverage run ${DIR_NAME}/test.py -v
       
       - name: Report Test Coverage
         env:
