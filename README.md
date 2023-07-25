@@ -4,13 +4,13 @@ A REST client for the Scout clients to securely communicate with the Spotseeker 
 
 ## Running uw-restclients-spotseeker
 
-To run the spotseeker server application, you'll need to `cd` into the `uw_spotseeker` directory and run `docker-compose up`.
+To run the test application, you'll need a running spotseeker_server instance, then `cd` into the `uw_spotseeker` directory and run `docker-compose up`.
 
 ## Running Tests
 
 ### Unit Tests
 
-To run the tests, you'll need to `cd` into the `uw_spotseeker` directory and run `docker exec -ti (spotseeker_app_name) manage.py test`.
+To run the tests, you'll need to `cd` into the `uw_spotseeker` directory and run `docker exec -ti (spotseeker_app_name) bin/python manage.py test`.
 
 ### Blackbox Tests
 
@@ -20,7 +20,7 @@ There's a test app named test-app in the `docker/` directory in this repo. You w
 
 `spotseeker-server` uses OAuth2 client credentials to register and validate applications attempting to communicate with it. To register the test-app, you'll need to run the following command:
 
-`docker exec -ti spotseeker-server register_application --show-credential`
+`docker exec -ti spotseeker-server bin/python manage.py register_application --show-credential`
 
 When prompted, enter the name of the testing app, `test-app` and the command will proceed to print out the credential for the application. You'll need to copy this credential and paste it into the `.env` file for `CREDENTIAL`.
 

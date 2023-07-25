@@ -54,6 +54,6 @@ else:
     CACHES = {
         'default': {
             'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-            'LOCATION': 'test-app',
+            'LOCATION': APP_NAME,
         }
     }
