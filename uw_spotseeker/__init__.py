@@ -57,7 +57,7 @@ class Spotseeker(object):
         if status != 200:
             raise DataFailureException(url, status, content)
 
-    def post_item_image(self, item_id, image: bytes) -> dict:
+    def post_item_image(self, item_id, image: bytes) -> bytes:
         url = "/api/v1/item/%s/image" % item_id
 
         headers = {"X-OAuth-User": os.getenv('OAUTH_USER')}
@@ -117,7 +117,8 @@ class Spotseeker(object):
 
         return self._spots_from_data(results)
 
-    def put_spot(self, spot_id, spot_json: str, etag) -> Tuple[MockHTTP, dict]:
+    def put_spot(self, spot_id, spot_json: str, etag) -> Tuple[MockHTTP,
+                                                               bytes]:
         url = "/api/v1/spot/%s" % spot_id
         implementation = Spotseeker_DAO().get_implementation()
 
@@ -133,7 +134,7 @@ class Spotseeker(object):
 
         return response, response.data
 
-    def delete_spot(self, spot_id, etag) -> Tuple[MockHTTP, dict]:
+    def delete_spot(self, spot_id, etag) -> Tuple[MockHTTP, bytes]:
         url = "/api/v1/spot/%s" % spot_id
         implementation = Spotseeker_DAO().get_implementation()
 
