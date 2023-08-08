@@ -5,9 +5,67 @@
 </head>
 <body>
     <h1>{{ title }}</h1>
-    <p>Scope: {{ scope }}</p>
-    <p>Access Token: {{ token }}</p>
-    <p>{{ data }}</p>
-    <img src="{{ image_url }}" />
+
+    <span>Scope: {{ scope }}</span>
+    <span id="token">Access Token: {{ token }}</span>
+
+    {% block content %}{% endblock %}
 </body>
+
+<style>
+    nav {
+        margin-bottom: 20px;
+    }
+
+    nav a {
+        padding: 10px;
+        background: #eee;
+        border-radius: 5px;
+        text-decoration: none;
+        color: #000;
+        margin-right: 10px;
+    }
+
+    nav a.active {
+        background: #000;
+        color: #fff;
+    }
+
+    .spot {
+        display: inline-block;
+        margin: 1rem;
+        border: 1px solid #000;
+        width: 10%;
+    }
+
+    .spot-image {
+        height: 110px;
+    }
+
+    .spot-image > img {
+        max-width: 100%;
+        max-height: 100%;
+    }
+
+    .spot-info {
+        background: #eee;
+        flex: 1;
+        display: flex;
+        padding: 0 1rem;
+        flex-direction: column;
+        justify-content: space-between;
+        overflow: hidden;
+        text-decoration: none;
+        color: inherit;
+    }
+
+    .collapse {
+        display: none;
+    }
+
+</style>
+
+{% block styles %}{% endblock %}
+
+{% block scripts %}{% endblock %}
 </html>
