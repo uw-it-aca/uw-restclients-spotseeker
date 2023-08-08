@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2>{{ spot.name }}</h2>
+
+<form>
+    <div class="form-group">
+        <label for="name">Name</label>
+        <input type="text" id="name" name="name" value="{{ spot.name }}" class="form-control">
+    </div>
+
+    <div class="form-group">
+        <label for="latitude">Latitude</label>
+        <input type="number" id="latitude" name="latitude" value="{{ spot.latitude }}" class="form-control">
+    </div>
+
+    <div class="form-group">
+        <label for="longitude">Longitude</label>
+        <input type="number" id="longitude" name="longitude" value="{{ spot.longitude }}" class="form-control">
+    </div>
+
+    <div class="form-group">
+        <label for="description">Building</label>
+        <select id="building" class="form-control">
+            {% for building in buildings %}
+                <option value="{{ building }}" name="building_name" {% if spot.building_name == building %}selected{% endif %}>{{ building }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label for="capacity">Capacity</label>
+        <input type="number" id="capacity" name="capacity" value="{{ spot.capacity }}" class="form-control">
+    </div>
+
+    <div class="form-group">
+        <label for="app-type">App Type</label>
+        <select id="app-type" name="extended_info:app_type" class="form-control">
+            <option value="study" {% if spot.app_type == 'study' %}selected{% endif %}>Study</option>
+            <option value="food" {% if spot.app_type == 'food' %}selected{% endif %}>Food</option>
+            <option value="tech" {% if spot.app_type == 'tech' %}selected{% endif %}>Tech</option>
+        </select>
+    </div>
+
+    <button type="submit">Save</button>
+</form>
+
+{% endblock %}
+
+{% block scripts %}
+
+<script>
+    function formSubmit(e) {
+        e.preventDefault();
+        const data = new FormData(e.target);
+        const values = Object.fromEntries(data.entries());
+
+        let extendedInfo = {};
+
+        // add any extended info from values to extendedInfo
+        for (const [key, value] of Object.entries(values)) {
+            if (key.startsWith('extended_info:')) {
+                extendedInfo[key.substring(14)] = value;
+            }
+        }
+
+        console.log(extendedInfo);
+
+        const spotUrl = '/spot/{{ spot.spot_id }}'
+
+        fetch(spotUrl, {
+            method: 'PUT',
+            body: JSON.stringify({...values, extended_info: extendedInfo}),
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        }).then(res => {
+            if (res.ok) {
+                console.log(res);
+                window.location.href = '/';
+            } else {
+                throw new Error('Something went wrong');
+            }
+        }).catch(err => {
+            console.log(err);
+            alert('Something went wrong');
+        });
+    };
+
+    const form = document.querySelector('form');
+    form.addEventListener('submit', formSubmit);
+</script>
+
+{% endblock %}

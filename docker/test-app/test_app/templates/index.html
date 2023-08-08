@@ -1,0 +1,251 @@
+<!-- my_template.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test App</title>
+</head>
+<body>
+    <h1>Test App</h1>
+
+    <!-- Tabs for switching between pages -->
+    <nav>
+        <a href="#get-tab" class="active" data-toggle="tab">GET</a>
+        <a href="#put-tab" data-toggle="tab">PUT</a>
+        <a href="#post-tab" data-toggle="tab">POST</a>
+        <a href="#delete-tab" data-toggle="tab">DELETE</a>
+    </nav>
+
+    <span>Scope: {{ scope }}</span>
+    <span id="token">Access Token: {{ token }}</span>
+
+    <!-- Tab content -->
+    <div class="tab-content">
+        <!-- GET tab -->
+        <div class="tab-pane active" id="get-tab">
+            <form id="get-form">
+                <input type="text" name="url" id="get-url" placeholder="Enter relative URL">
+                <!-- Add options for image upload if needed -->
+                <button type="submit">GET</button>
+            </form>
+            <div id="get-output">
+                <!-- Text output -->
+                <textarea id="text-output" readonly></textarea>
+
+                <!-- Image output -->
+                <div id="image-output"></div>
+            </div>
+        </div>
+
+        <!-- PUT tab -->
+        <!-- Similar structure as the GET tab for PUT request -->
+        <div class="tab-pane" id="put-tab">
+            <form id="put-form">
+                <input type="text" name="url" id="put-url" placeholder="Enter relative URL">
+                <button type="submit">PUT</button>
+
+                <!-- Image upload -->
+                <input type="file" name="image" id="image">
+
+                <!-- Spot json input -->
+                <textarea name="spot" id="spot" placeholder="Enter spot JSON"></textarea>
+            </form>
+            <div id="put-output">
+                <!-- Text output -->
+                <textarea id="text-output" readonly></textarea>
+
+                <!-- Image output -->
+                <div id="image-output"></div>
+            </div>
+        </div>
+
+        <!-- POST tab -->
+        <!-- Similar structure as the GET tab for POST request -->
+        <div class="tab-pane" id="post-tab">
+            <form id="post-form">
+                <input type="text" name="url" id="post-url" placeholder="Enter relative URL">
+                <button type="submit">POST</button>
+
+                <!-- Image upload -->
+                <input type="file" name="image" id="image">
+
+                <!-- Spot json input -->
+                <textarea name="spot" id="spot" placeholder="Enter spot JSON"></textarea>
+            </form>
+            <div id="post-output">
+                <!-- Text output -->
+                <textarea id="text-output" readonly></textarea>
+
+                <!-- Image output -->
+                <div id="image-output"></div>
+            </div>
+        </div>
+
+        <!-- DELETE tab -->
+        <!-- Similar structure as the GET tab for DELETE request -->
+        <div class="tab-pane" id="delete-tab">
+            <form id="delete-form">
+                <input type="text" name="url" id="delete-url" placeholder="Enter relative URL">
+                <!-- Add options for image upload if needed -->
+                <button type="submit">DELETE</button>
+            </form>
+            <div id="delete-output"></div>
+        </div>
+    </div>
+
+    <!-- JavaScript to handle form submissions and AJAX calls -->
+    <script>
+        // Function to update the token
+        function updateToken() {
+            fetch('get_token')
+            .then(response => response.text())
+            .then(data => {
+                document.getElementById('token').textContent = 'Access Token: ' + data;
+            })
+            .catch(error => {
+                console.error(error);
+            });
+        }
+
+        // Function to handle form submissions
+        function handleFormSubmission(formId, outputId, method) {
+            document.getElementById(formId).addEventListener('submit', function(event) {
+                event.preventDefault();
+                const formData = new FormData(this);
+                const url = formData.get('url');
+
+                let data = {method: method};
+                if (method === 'POST' || method === 'PUT') {
+                    data = {
+                        method: method,
+                        body: formData
+                    };
+                }
+
+                fetch(url, data)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    console.log(response);
+                    return response.json();
+                })
+                .then(data => {
+                    string_data = JSON.stringify(data, null, 2);
+
+                    // put all text data into the text output
+                    document.getElementById(outputId).querySelector('#text-output').innerHTML = string_data;
+
+                    // Handle image output if needed
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+
+                // Update the token
+                updateToken();
+            });
+        }
+
+        // Call the function for each tab
+        document.addEventListener('DOMContentLoaded', function() {
+            handleFormSubmission('get-form', 'get-output', 'GET');
+            handleFormSubmission('put-form', 'put-output', 'PUT');
+            handleFormSubmission('post-form', 'post-output', 'POST');
+            handleFormSubmission('delete-form', 'delete-output', 'DELETE');
+        });
+
+        const tabs = document.querySelectorAll('nav a');
+        const tabPanes = document.querySelectorAll('.tab-pane');
+
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                // Remove the active class from all tabs
+                tabs.forEach(tab => {
+                    tab.classList.remove('active');
+                });
+
+                // Add the active class to the clicked tab
+                tab.classList.add('active');
+
+                // Hide all tab-panes
+                tabPanes.forEach(tabPane => {
+                    tabPane.style.display = 'none';
+                });
+
+                // Show the corresponding tab-pane
+                const tabPaneId = tab.getAttribute('href');
+                const tabPane = document.querySelector(tabPaneId);
+                tabPane.style.display = 'block';
+            });
+        });
+    </script>
+
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        body > * {
+            margin: 10px;
+        }
+
+        nav {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #f2f2f2;
+            max-width: 30em;
+            margin: 0 auto;
+        }
+
+        nav a {
+            color: #333;
+            text-decoration: none;
+            padding: 10px;
+            border-bottom: 2px solid transparent;
+            flex: 1;
+            flex-basis: 0;
+            text-align: center;
+            border: 2px solid transparent;
+            border-radius: 5px;
+        }
+
+        nav a:hover {
+            border-bottom: 2px solid #333;
+        }
+
+        nav a.active {
+            border: 2px solid #333;
+            border-radius: 5px;
+        }
+
+        .tab-content {
+            max-width: 75%;
+            margin: 0 auto;
+        }
+
+        .tab-pane:not(.active) {
+            display: none;
+        }
+
+        .tab-pane {
+            max-width: 75%;
+            margin: 0 auto;
+        }
+
+        .tab-pane > * {
+            margin: 10px;
+        }
+
+        textarea {
+            width: 50em;
+            min-height: 20em;
+            max-height: 100em;
+            overflow-y: auto;
+        }
+    </style>
+</body>
+</html>
