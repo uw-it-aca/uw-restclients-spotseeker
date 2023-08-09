@@ -4,6 +4,17 @@
 
 <h2>{{ spot.name }}</h2>
 
+<form>
+    <div>
+        <label for="image">Upload Image</label>
+        <input type="file" id="image" accept="image/*" />
+    </div>
+
+    <div>
+        <button type="submit" id="upload">Upload</button>
+    </div>
+</form>
+
 <div class="imgs">
 {% for image in spot.images %}
     <div class="img-block">
@@ -58,6 +69,7 @@
 
 {% block scripts %}
 <script>
+    // spot delete
     const deleteButton = document.querySelector('#delete');
 
     deleteButton.addEventListener('click', () => {
@@ -76,6 +88,7 @@
         });
     });
 
+    // image delete
     const deleteImgButtons = document.querySelectorAll('.delete-img');
 
     function imageDelete(event) {
@@ -103,6 +116,30 @@
 
     deleteImgButtons.forEach(button => {
         button.addEventListener('click', imageDelete);
+    });
+
+    // image upload
+    const uploadButton = document.querySelector('#upload');
+    const imageInput = document.querySelector('#image');
+
+    uploadButton.addEventListener('click', () => {
+        event.preventDefault();
+
+        const formData = new FormData();
+        formData.append('file', imageInput.files[0]);
+
+        fetch('{{ spot.spot_id }}/image', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => {
+            if (response.ok) {
+                window.location.href = '/spot/{{ spot.spot_id }}';
+                window.location.reload();
+            } else {
+                alert('Something went wrong.');
+            }
+        });
     });
 </script>
 {% endblock %}
