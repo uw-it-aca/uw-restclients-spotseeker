@@ -8,17 +8,11 @@ from django.shortcuts import render
 from django.conf import settings
 from django.core.cache import cache
 from uw_spotseeker import Spotseeker
-from uw_spotseeker.models import SpotType
 import json
 import logging
-import requests
 
 logging.basicConfig()
 logger = logging.getLogger(__name__)
-
-
-response = requests.get('https://picsum.photos/id/237/200/300')
-example_img = response.content
 
 
 class BuildingsView(TemplateView):
@@ -196,7 +190,7 @@ class SpotImageView(TemplateView):
     def post(self, request, spot_id):
         img = request.FILES.get('file', None)
         if not img:
-            img = example_img
+            return HttpResponse(status=400)
 
         spotseeker = Spotseeker()
         image = spotseeker.post_image(spot_id, img)
@@ -230,7 +224,7 @@ class ItemImageView(TemplateView):
     def post(self, request, item_id):
         img = request.FILES['file']
         if not img:
-            img = example_img
+            return HttpResponse(status=400)
 
         spotseeker = Spotseeker()
         data = spotseeker.post_item_image(item_id, img)
