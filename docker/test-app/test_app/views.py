@@ -1,9 +1,8 @@
 # Copyright 2023 UW-IT, University of Washington
 # SPDX-License-Identifier: Apache-2.0
 
-from typing import Any, Dict
 from django.http import HttpResponse
-from django.views.generic.base import TemplateView
+from django.views.generic.base import TemplateView, View
 from django.shortcuts import render
 from django.conf import settings
 from django.core.cache import cache
@@ -15,36 +14,27 @@ logging.basicConfig()
 logger = logging.getLogger(__name__)
 
 
-class BuildingsView(TemplateView):
-    template_name = "buildings.html"
+def get_token() -> str:
+    token = cache.get(settings.APP_NAME)
+    if token is None:
+        return 'no token in cache'
 
-    def get_context_data(self, **kwargs):
-        context = super(BuildingsView, self).get_context_data(**kwargs)
+    return token
+
+
+class BuildingsView(View):
+    def get(self, request):
         spotseeker = Spotseeker()
-        buildings = spotseeker.get_building_list(kwargs.get('campus'),
-                                                 kwargs.get('app_type'))
-        context['data'] = buildings
-        context['title'] = "All Buildings"
-        context['scope'] = settings.SPOTSEEKER_OAUTH_SCOPE
 
-        token = cache.get(settings.APP_NAME)
-        if token is None:
-            context['token'] = 'no token in cache'
-        else:
-            context['token'] = token
-        return context
-
-    def get(self, request, *args, **kwargs):
         campus = request.GET.get('campus', 'seattle')
         app_type = request.GET.get('app_type')
-        context = self.get_context_data(**kwargs, campus=campus,
-                                        app_type=app_type)
-        return HttpResponse(json.dumps(context['data']),
-                            content_type="application/json")
+
+        data = spotseeker.get_building_list(campus, app_type)
+        return HttpResponse(json.dumps(data), content_type='application/json')
 
 
 class AllSpotsView(TemplateView):
-    template_name = "all_spots.html"
+    template_name = 'all_spots.html'
 
     def get_context_data(self, **kwargs):
         context = super(AllSpotsView, self).get_context_data(**kwargs)
@@ -56,14 +46,9 @@ class AllSpotsView(TemplateView):
             spots = spotseeker.all_spots()
 
         context['spots'] = spots
-        context['title'] = "Spots"
+        context['title'] = 'Spots'
         context['scope'] = settings.SPOTSEEKER_OAUTH_SCOPE
-
-        token = cache.get(settings.APP_NAME)
-        if token is None:
-            context['token'] = 'no token in cache'
-        else:
-            context['token'] = token
+        context['token'] = get_token()
 
         return context
 
@@ -74,50 +59,43 @@ class AllSpotsView(TemplateView):
 
 
 class SpotView(TemplateView):
-    template_name = "spot.html"
+    template_name = 'spot.html'
 
     def get_context_data(self, **kwargs):
         context = super(SpotView, self).get_context_data(**kwargs)
-        context['title'] = "Spot"
-        context['scope'] = settings.SPOTSEEKER_OAUTH_SCOPE
+        spotseeker = Spotseeker()
 
-        token = cache.get(settings.APP_NAME, None)
-        if token is None:
-            context['token'] = 'no token in cache'
-        else:
-            context['token'] = token
+        context['title'] = 'Spot'
+        context['scope'] = settings.SPOTSEEKER_OAUTH_SCOPE
+        context['token'] = get_token()
+        context['spot'] = spotseeker.get_spot_by_id(kwargs.get('spot_id'))
+
         return context
 
     def get(self, request, spot_id):
-        spotseeker = Spotseeker()
-        spot = spotseeker.get_spot_by_id(spot_id)
-        context = self.get_context_data()
-        context['spot'] = spot
+        context = self.get_context_data(spot_id=spot_id)
         return render(request, self.template_name, context)
 
     def post(self, request):
         body = request.body
-        if not body:
-            body = example_spot
-
         spotseeker = Spotseeker()
+
         response = spotseeker.post_spot(body)
         return HttpResponse(response.data, status=response.status,
                             content_type=response.headers['Content-Type'])
 
     def delete(self, request, spot_id):
         spotseeker = Spotseeker()
+
         spot = spotseeker.get_spot_by_id(spot_id)
         etag = spot.etag
-        response, content = spotseeker.delete_spot(spot_id, etag)
+        _, _ = spotseeker.delete_spot(spot_id, etag)
         return HttpResponse(status=200)
 
     def put(self, request, spot_id):
-        print('\n\n\n\n\n')
-        print(request, request.body)
         body = request.body
-
         spotseeker = Spotseeker()
+
         spot = spotseeker.get_spot_by_id(spot_id)
         etag = spot.etag
         response, _ = spotseeker.put_spot(spot_id, body, etag)
@@ -126,19 +104,15 @@ class SpotView(TemplateView):
 
 
 class NewSpotView(TemplateView):
-    template_name = "new_spot.html"
+    template_name = 'new_spot.html'
 
     def get_context_data(self, **kwargs):
         context = super(NewSpotView, self).get_context_data(**kwargs)
-        context['title'] = "New Spot"
+        context['title'] = 'New Spot'
         context['scope'] = settings.SPOTSEEKER_OAUTH_SCOPE
         context['buildings'] = Spotseeker().get_building_list('seattle')
+        context['token'] = get_token()
 
-        token = cache.get(settings.APP_NAME)
-        if token is None:
-            context['token'] = 'no token in cache'
-        else:
-            context['token'] = token
         return context
 
     def get(self, request):
@@ -147,48 +121,38 @@ class NewSpotView(TemplateView):
 
 
 class SpotEditView(TemplateView):
-    template_name = "spot_edit.html"
+    template_name = 'spot_edit.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['title'] = "Edit Spot"
-        context['scope'] = settings.SPOTSEEKER_OAUTH_SCOPE
-        context['buildings'] = Spotseeker().get_building_list('seattle')
+        spotseeker = Spotseeker()
 
-        token = cache.get(settings.APP_NAME)
-        if token is None:
-            context['token'] = 'no token in cache'
-        else:
-            context['token'] = token
+        context['title'] = 'Edit Spot'
+        context['scope'] = settings.SPOTSEEKER_OAUTH_SCOPE
+        context['buildings'] = spotseeker.get_building_list('seattle')
+        context['token'] = get_token()
+        context['spot'] = spotseeker.get_spot_by_id(kwargs.get('spot_id'))
 
         return context
 
     def get(self, request, spot_id):
-        spotseeker = Spotseeker()
-        spot = spotseeker.get_spot_by_id(spot_id)
-        context = self.get_context_data()
-        context['spot'] = spot
+        context = self.get_context_data(spot_id=spot_id)
         return render(request, self.template_name, context)
 
 
-class SpotImageView(TemplateView):
-    template_name = "spot_image.html"
-
-    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
-        return super().get_context_data(**kwargs)
-
+class SpotImageView(View):
     def get(self, request, spot_id, img_id):
         spotseeker = Spotseeker()
         resp, content = spotseeker.get_spot_image(spot_id, img_id)
 
-        etag = resp.headers.get('etag', None)
+        etag = resp.headers.get('etag')
         response = HttpResponse(content,
                                 content_type=resp.headers['content-type'])
         response['etag'] = etag
         return response
 
     def post(self, request, spot_id):
-        img = request.FILES.get('file', None)
+        img = request.FILES.get('file')
         if not img:
             return HttpResponse(status=400)
 
@@ -200,22 +164,17 @@ class SpotImageView(TemplateView):
         spotseeker = Spotseeker()
         resp, _ = spotseeker.get_spot_image(spot_id, img_id)
 
-        etag = resp.headers.get('etag', None)
-        response = spotseeker.delete_image(spot_id, img_id, etag)
+        etag = resp.headers.get('etag')
+        _ = spotseeker.delete_image(spot_id, img_id, etag)
         return HttpResponse(status=200)
 
 
-class ItemImageView(TemplateView):
-    template_name = "item_image.html"
-
-    def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
-        return super().get_context_data(**kwargs)
-
+class ItemImageView(View):
     def get(self, request, item_id, img_id):
         spotseeker = Spotseeker()
         resp, content = spotseeker.get_item_image(item_id, img_id)
 
-        etag = resp.headers.get('etag', None)
+        etag = resp.headers.get('etag')
         response = HttpResponse(content,
                                 content_type=resp.headers['content-type'])
         response['etag'] = etag
@@ -232,9 +191,8 @@ class ItemImageView(TemplateView):
 
     def delete(self, request, item_id, img_id):
         spotseeker = Spotseeker()
-
         resp, _ = spotseeker.get_item_image(item_id, img_id)
-        etag = resp.etag
 
+        etag = resp.headers.get('etag')
         spotseeker.delete_item_image(item_id, img_id, etag)
         return HttpResponse(status=200)
