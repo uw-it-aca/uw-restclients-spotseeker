@@ -43,6 +43,24 @@
         </select>
     </div>
 
+    {% if spot.items %}
+    <div class="form-group">
+        <h3>Items</h3>
+        {% for item in spot.items %}
+            <p>{{ item.name }}</p>
+
+            {% for item_image in item.images %}
+                <div class="img-block">
+                    <img src="{{ item_image.url|slice:'7:' }}" alt="{{ item_image.name }}">
+                    <div class="img-options">
+                        <button class="delete-img" onclick="deleteItemImage({{ item.item_id }}, {{ item_image.image_id }})">Delete</button>
+                    </div>
+                </div>
+            {% endfor %}
+        {% endfor %}
+    </div>
+    {% endif %}
+
     <button type="submit">Save</button>
 </form>
 
@@ -90,6 +108,23 @@
 
     const form = document.querySelector('form');
     form.addEventListener('submit', formSubmit);
+
+    function deleteItemImage(itemId, imageId) {
+        const url = `/item/${itemId}/image/${imageId}`;
+
+        fetch(url, {
+            method: 'DELETE'
+        }).then(res => {
+            if (res.ok) {
+                window.location.reload();
+            } else {
+                throw new Error('Something went wrong');
+            }
+        }).catch(err => {
+            console.log(err);
+            alert('Something went wrong');
+        });
+    }
 </script>
 
 {% endblock %}
