@@ -67,19 +67,6 @@
 
 {% block styles %}
 <style>
-    .img-options {
-        display: none;
-        transition: display 0.5s;
-    }
-
-    .img-block {
-        display: inline-block;
-    }
-
-    .img-block:hover .img-options {
-        display: block;
-    }
-
     .imgs {
         display: inline-block;
     }
@@ -124,7 +111,6 @@
         } else {
             imageUrl = `${document.URL}/image/${imageId}`;
         }
-        console.log(imageUrl);
 
         fetch(imageUrl, {
             method: 'DELETE',
