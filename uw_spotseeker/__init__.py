@@ -66,7 +66,7 @@ class Spotseeker(object):
         response = Spotseeker_DAO().postURL(url, headers)
         content = response.data
         status = response.status
-        if status != 200:
+        if status not in [200, 201]:
             raise DataFailureException(url, status, content)
 
         return content
