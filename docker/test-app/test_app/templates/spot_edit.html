@@ -4,7 +4,7 @@
 
 <h2>{{ spot.name }}</h2>
 
-<form>
+<form class="spot-form">
     <div class="form-group">
         <label for="name">Name</label>
         <input type="text" id="name" name="name" value="{{ spot.name }}" class="form-control">
@@ -48,6 +48,15 @@
         <h3>Items</h3>
         {% for item in spot.items %}
             <p>{{ item.name }}</p>
+
+            <div class="img-form">
+                <div class="form-group">
+                    <input type="file" name="item_image" accept="image/*">
+                </div>
+                <div class="form-group">
+                    <button class="upload-img" data-itemid="{{ item.item_id }}">Upload</button>
+                </div>
+            </div>
 
             {% for item_image in item.images %}
                 <div class="img-block">
@@ -106,7 +115,7 @@
         });
     };
 
-    const form = document.querySelector('form');
+    const form = document.querySelector('.spot-form');
     form.addEventListener('submit', formSubmit);
 
     function deleteItemImage(itemId, imageId) {
@@ -115,6 +124,7 @@
         fetch(url, {
             method: 'DELETE'
         }).then(res => {
+            // TODO: etag issue?, doesn't affect functionality (put triggered)
             if (res.ok) {
                 window.location.reload();
             } else {
@@ -125,6 +135,38 @@
             alert('Something went wrong');
         });
     }
+
+    // image upload
+    function uploadItemImage(uploadButton, imageInput) {
+        event.preventDefault();
+
+        const formData = new FormData();
+        formData.append('file', imageInput.files[0]);
+
+        const itemId = uploadButton.dataset.itemid;
+        fetch(`/item/${itemId}/image`, {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => {
+            if (response.ok) {
+                imageInput.value = '';
+                window.location.href = '/spot/{{ spot.spot_id }}/edit';
+                window.location.reload();
+            } else {
+                alert(`Something went wrong: ${response.status}`);
+            }
+        });
+    }
+
+    document.querySelectorAll('.img-form').forEach(imgBlock => {
+        const uploadButton = imgBlock.querySelector('.upload-img');
+        const imageInput = imgBlock.querySelector('input[type=file]');
+
+        uploadButton.addEventListener('click', () => {
+            uploadItemImage(uploadButton, imageInput);
+        });
+    });
 </script>
 
 {% endblock %}
