@@ -20,7 +20,7 @@
     <div class="img-block">
         <img src="{{ image.url|slice:'7:' }}" alt="{{ spot.name }}"" />
         <div class="img-options">
-            <button class="delete-img" data-id="{{ image.image_id }}">Delete</button>
+            <button class="delete-img" data-imageid="{{ image.image_id }}">Delete</button>
         </div>
     </div>
 {% endfor %}
@@ -41,8 +41,27 @@
     <p>{{ ei.key }}: {{ ei.value }}</p>
 {% endfor %}
 
-<button id="edit" onclick="window.location.href='/spot/{{ spot.spot_id }}/edit'">Edit</button>
-<button id="delete">Delete</button>
+{% if spot.items %}
+
+<b>Items:</b>
+{% for item in spot.items %}
+    <p>{{ item.name }}</p>
+    {% for item_image in item.images %}
+        <div class="img-block">
+            <img src="{{ item_image.url|slice:'7:' }}" alt="{{ item.name }}" />
+            <div class="img-options">
+                <button class="delete-img" data-item="true" data-imageid="{{ item_image.image_id }}" data-itemid="{{ item.item_id }}">Delete</button>
+            </div>
+        </div>
+    {% endfor %}
+{% endfor %}
+
+{% endif %}
+
+<div>
+    <button id="edit" onclick="window.location.href='/spot/{{ spot.spot_id }}/edit'">Edit</button>
+    <button id="delete">Delete</button>
+</div>
 
 {% endblock %}
 
@@ -95,8 +114,16 @@
         event.preventDefault();
 
         // get image id from form
-        const imageId = event.target.dataset.id;
-        const imageUrl = `${document.URL}/image/${imageId}`;
+        const imageId = event.target.dataset.imageid;
+        const isItem = event.target.dataset.item;
+        var imageUrl;
+
+        if (isItem) {
+            var itemId = event.target.dataset.itemid;
+            imageUrl = `/item/${itemId}/image/${imageId}`;
+        } else {
+            imageUrl = `${document.URL}/image/${imageId}`;
+        }
         console.log(imageUrl);
 
         fetch(imageUrl, {
