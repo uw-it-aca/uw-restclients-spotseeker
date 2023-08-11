@@ -21,10 +21,10 @@
     </div>
 
     <div class="form-group">
-        <label for="description">Building</label>
-        <select id="building" class="form-control">
+        <label for="building">Building</label>
+        <select id="building" name="building_name" class="form-control">
             {% for building in buildings %}
-                <option value="{{ building }}" name="building_name" {% if spot.building_name == building %}selected{% endif %}>{{ building }}</option>
+                <option value="{{ building }}" {% if spot.building_name == building %}selected{% endif %}>{{ building }}</option>
             {% endfor %}
         </select>
     </div>
@@ -69,9 +69,9 @@
         {% endfor %}
     </div>
     {% endif %}
-
-    <button type="submit">Save</button>
 </form>
+
+<button id="save-spot-edit" type="submit">Save</button>
 
 {% endblock %}
 
@@ -80,7 +80,8 @@
 <script>
     function formSubmit(e) {
         e.preventDefault();
-        const data = new FormData(e.target);
+        const form = document.querySelector('.spot-form');
+        const data = new FormData(form);
         const values = Object.fromEntries(data.entries());
 
         let extendedInfo = {};
@@ -91,8 +92,6 @@
                 extendedInfo[key.substring(14)] = value;
             }
         }
-
-        console.log(extendedInfo);
 
         const spotUrl = '/spot/{{ spot.spot_id }}'
 
@@ -115,20 +114,23 @@
         });
     };
 
-    const form = document.querySelector('.spot-form');
-    form.addEventListener('submit', formSubmit);
+    const saveButton = document.querySelector('#save-spot-edit');
+    saveButton.addEventListener('click', formSubmit);
 
     function deleteItemImage(itemId, imageId) {
+        console.log(itemId, imageId);
         const url = `/item/${itemId}/image/${imageId}`;
 
         fetch(url, {
-            method: 'DELETE'
+            method: 'DELETE',  // TODO: DELETE gets blocked??
+            headers: {
+                'Content-Type': 'application/json'
+            }
         }).then(res => {
-            // TODO: etag issue?, doesn't affect functionality (put triggered)
             if (res.ok) {
                 window.location.reload();
             } else {
-                throw new Error('Something went wrong');
+                throw new Error('Something went wrong, bad response');
             }
         }).catch(err => {
             console.log(err);
