@@ -103,7 +103,6 @@
             }
         }).then(res => {
             if (res.ok) {
-                console.log(res);
                 window.location.href = '/';
             } else {
                 throw new Error('Something went wrong');
@@ -118,11 +117,10 @@
     saveButton.addEventListener('click', formSubmit);
 
     function deleteItemImage(itemId, imageId) {
-        console.log(itemId, imageId);
         const url = `/item/${itemId}/image/${imageId}`;
 
         fetch(url, {
-            method: 'DELETE',  // TODO: DELETE gets blocked??
+            method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json'
             }
@@ -132,9 +130,6 @@
             } else {
                 throw new Error('Something went wrong, bad response');
             }
-        }).catch(err => {
-            console.log(err);
-            alert('Something went wrong');
         });
     }
 
