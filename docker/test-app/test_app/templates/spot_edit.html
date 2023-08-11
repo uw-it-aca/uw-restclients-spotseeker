@@ -95,6 +95,9 @@
 
         const spotUrl = '/spot/{{ spot.spot_id }}'
 
+        // WARNING: this is a PUT, not a PATCH, so default extended_info values
+        // from create_sample_spots will be overwritten. This is fine for now
+        // and couldn't easily be solved without a PATCH endpoint.
         fetch(spotUrl, {
             method: 'PUT',
             body: JSON.stringify({...values, extended_info: extendedInfo}),
