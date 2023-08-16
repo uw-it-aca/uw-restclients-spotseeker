@@ -7,22 +7,22 @@
 <form class="spot-form">
     <div class="form-group">
         <label for="name">Name</label>
-        <input type="text" id="name" name="name" value="{{ spot.name }}" class="form-control">
+        <input type="text" name="name" value="{{ spot.name }}" class="form-control">
     </div>
 
     <div class="form-group">
         <label for="latitude">Latitude</label>
-        <input type="number" id="latitude" name="latitude" value="{{ spot.latitude }}" class="form-control">
+        <input type="number" name="latitude" value="{{ spot.latitude }}" class="form-control">
     </div>
 
     <div class="form-group">
         <label for="longitude">Longitude</label>
-        <input type="number" id="longitude" name="longitude" value="{{ spot.longitude }}" class="form-control">
+        <input type="number" name="longitude" value="{{ spot.longitude }}" class="form-control">
     </div>
 
     <div class="form-group">
         <label for="building">Building</label>
-        <select id="building" name="building_name" class="form-control">
+        <select name="building_name" class="form-control">
             {% for building in buildings %}
                 <option value="{{ building }}" {% if spot.building_name == building %}selected{% endif %}>{{ building }}</option>
             {% endfor %}
@@ -31,12 +31,12 @@
 
     <div class="form-group">
         <label for="capacity">Capacity</label>
-        <input type="number" id="capacity" name="capacity" value="{{ spot.capacity }}" class="form-control">
+        <input type="number" name="capacity" value="{{ spot.capacity }}" class="form-control">
     </div>
 
     <div class="form-group">
         <label for="app-type">App Type</label>
-        <select id="app-type" name="extended_info:app_type" class="form-control">
+        <select name="extended_info:app_type" class="form-control">
             <option value="study" {% if spot.app_type == 'study' %}selected{% endif %}>Study</option>
             <option value="food" {% if spot.app_type == 'food' %}selected{% endif %}>Food</option>
             <option value="tech" {% if spot.app_type == 'tech' %}selected{% endif %}>Tech</option>
