@@ -10,21 +10,20 @@
     <button id="new-spot-button" onclick="window.location.href='/spot/new'">New Spot</button>
 </div>
 
-<div id="filter-form" class="collapse">
-  <form>
-    <div class="form-group">
-      <label for="extended_info:app_type">App Type:</label>
-      <div>
-        <div><label><input type="radio" name="extended_info:app_type" value="food"> Food</label></div>
-        <div><label><input type="radio" name="extended_info:app_type" value="study"> Study</label></div>
-        <div><label><input type="radio" name="extended_info:app_type" value="tech"> Tech</label></div>
-      </div>
+<form id="filter-form" class="collapse">
+  <div class="form-group">
+    <label for="extended_info:app_type">App Type:</label>
+    <div>
+      <div><label><input type="radio" name="extended_info:app_type" value="food"> Food</label></div>
+      <div><label><input type="radio" name="extended_info:app_type" value="study"> Study</label></div>
+      <div><label><input type="radio" name="extended_info:app_type" value="tech"> Tech</label></div>
     </div>
-    <div class="form-group">
-      <button type="submit">Apply</button>
-    </div>
-  </form>
-</div>
+  </div>
+
+  <div class="form-group">
+    <button type="submit">Apply</button>
+  </div>
+</form>
 
 <div id="spot-grid">
     {% for spot in spots %}
@@ -32,6 +31,7 @@
     <div class="spot">
         <div class="spot-image" >
             {% if spot.images %}
+            <!-- /api/v1/spot/1/image/1 -> /spot/1/image/1 -->
             <img src="{{ spot.images.0.url|slice:'7:' }}" alt="Image">
             {% else %}
             <img alt="no images">
