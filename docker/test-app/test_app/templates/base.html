@@ -6,9 +6,9 @@
 <body>
     <h1>{{ title }}</h1>
 
-    <div><b>Scope:</b> {{ scope }}</div>
-    <div><b>Access Token:</b> {{ token }}</div>
-    <br />
+    <div><strong>Scope:</strong> {{ scope }}</div>
+    <div><strong>Access Token:</strong> {{ token }}</div>
+    <br>
 
     {% block content %}{% endblock %}
 </body>
@@ -57,4 +57,5 @@
 {% block styles %}{% endblock %}
 
 {% block scripts %}{% endblock %}
+
 </html>

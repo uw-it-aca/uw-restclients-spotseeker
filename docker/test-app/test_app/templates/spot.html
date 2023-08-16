@@ -18,6 +18,7 @@
 <div class="imgs">
 {% for image in spot.images %}
     <div class="img-block">
+        <!-- /api/v1/spot/1/image/1 -> /spot/1/image/1 -->
         <img src="{{ image.url|slice:'7:' }}" alt="{{ spot.name }}"" />
         <div class="img-options">
             <button class="delete-img" data-imageid="{{ image.image_id }}">Delete</button>
@@ -34,14 +35,14 @@
 
 <p>{{ spot.last_modified }}</p>
 
-<b>Extended Info:</b>
+<strong>Extended Info:</strong>
 {% for ei in spot.extended_info %}
     <p>{{ ei.key }}: {{ ei.value }}</p>
 {% endfor %}
 
 {% if spot.items %}
 
-<b>Items:</b>
+<strong>Items:</strong>
 {% for item in spot.items %}
     <p>{{ item.name }}</p>
     {% for item_image in item.images %}
@@ -107,7 +108,7 @@
             var itemId = event.target.dataset.itemid;
             imageUrl = `/item/${itemId}/image/${imageId}`;
         } else {
-            imageUrl = `${document.URL}/image/${imageId}`;
+            imageUrl = `/spot/{{ spot.spot_id }}/image/${imageId}`;
         }
 
         fetch(imageUrl, {
