@@ -15,11 +15,7 @@ logger = logging.getLogger(__name__)
 
 
 def get_token() -> str:
-    token = cache.get(settings.APP_NAME)
-    if token is None:
-        return 'no token in cache'
-
-    return token
+    return cache.get(settings.APP_NAME, 'no token in cache')
 
 
 class BuildingsView(View):
