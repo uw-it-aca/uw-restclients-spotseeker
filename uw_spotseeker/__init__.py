@@ -31,23 +31,20 @@ logger = logging.getLogger(__name__)
 
 class Spotseeker(object):
 
-    def post_image(self, spot_id, image: bytes) -> bytes:
-        url = "/api/v1/spot/%s/image" % spot_id
-
+    def _post_image(self, url, image: bytes) -> bytes:
         headers = {"X-OAuth-User": os.getenv('OAUTH_USER')}
         headers['files'] = {'image': ('image.jpg', image)}
 
         response = Spotseeker_DAO().postURL(url, headers)
+        content = response.data
         status = response.status
         if status not in [200, 201]:
             raise DataFailureException(url, status,
-                                       getattr(response, 'reason', None))
+                                       getattr(response, 'reason', content))
 
-        return response.data
+        return content
 
-    def delete_image(self, spot_id, image_id, etag) -> None:
-        url = "/api/v1/spot/%s/image/%s" % (spot_id, image_id)
-
+    def _delete_image(self, url, etag) -> None:
         headers = {"X-OAuth-User": os.getenv('OAUTH_USER'),
                    "If-Match": etag}
         response = Spotseeker_DAO().deleteURL(url, headers)
@@ -55,39 +52,28 @@ class Spotseeker(object):
         status = response.status
 
         if status != 200:
-            raise DataFailureException(url, status, content)
+            raise DataFailureException(url, status,
+                                       getattr(response, 'reason', content))
+
+    def post_image(self, spot_id, image: bytes) -> bytes:
+        url = "/api/v1/spot/%s/image" % spot_id
+        return self._post_image(url, image)
 
     def post_item_image(self, item_id, image: bytes) -> bytes:
         url = "/api/v1/item/%s/image" % item_id
+        return self._post_image(url, image)
 
-        headers = {"X-OAuth-User": os.getenv('OAUTH_USER')}
-        headers['files'] = {'image': ('image.jpg', image)}
-
-        response = Spotseeker_DAO().postURL(url, headers)
-        content = response.data
-        status = response.status
-        if status not in [200, 201]:
-            raise DataFailureException(url, status, content)
-
-        return content
+    def delete_image(self, spot_id, image_id, etag) -> None:
+        url = "/api/v1/spot/%s/image/%s" % (spot_id, image_id)
+        self._delete_image(url, etag)
+        return None
 
     def delete_item_image(self, item_id, image_id, etag) -> None:
         url = "/api/v1/item/%s/image/%s" % (item_id, image_id)
-        implementation = Spotseeker_DAO().get_implementation()
+        self._delete_image(url, etag)
+        return None
 
-        if implementation.is_mock():
-            status = 200
-        else:
-            headers = {"X-OAuth-User": os.getenv('OAUTH_USER'),
-                       "If-Match": etag}
-            response = Spotseeker_DAO().deleteURL(url, headers)
-            status = response.status
-
-        if status != 200:
-            raise DataFailureException(url, status, response.reason)
-
-    def all_spots(self):
-        url = "/api/v1/spot/all"
+    def _get_spots_json(self, url):
         response = Spotseeker_DAO().getURL(url)
         status = response.status
         content = response.data
@@ -96,38 +82,53 @@ class Spotseeker(object):
             raise DataFailureException(url, status, content)
 
         results = json.loads(content.decode('utf-8'))
+        return results
 
-        spots = self._spots_from_data(results)
-        return spots
+    def get_filtered_spots_json(self, filters=[]) -> List[dict]:
+        """
+        Returns a list of spots matching the passed parameters
+        """
 
-    def search_spots(self, query_tuple):
+        url = "/api/v1/spot?" + urlencode(filters)
+        return self._get_spots_json(url)
+
+    def get_spot_by_id_json(self, spot_id: int) -> dict:
+        """
+        Returns a list of spots matching the passed parameters
+        """
+
+        self._validate_spotid(spot_id)
+        url = "/api/v1/spot/%s" % spot_id
+        return self._get_spots_json(url)
+
+    def get_all_spots_json(self) -> List[dict]:
+        """
+        Returns a list of all spots
+        """
+
+        url = "/api/v1/spot/all"
+        return self._get_spots_json(url)
+
+    def all_spots(self) -> List[Spot]:
+        url = "/api/v1/spot/all"
+        results = self._get_spots_json(url)
+        return self._spots_from_data(results)
+
+    def search_spots(self, query_tuple) -> List[Spot]:
         """
         Returns a list of spots matching the passed parameters
         """
 
         url = "/api/v1/spot?" + urlencode(query_tuple)
-
-        response = Spotseeker_DAO().getURL(url)
-        status = response.status
-        content = response.data
-
-        if status != 200:
-            raise DataFailureException(url, status, content)
-        results = json.loads(content.decode('utf-8'))
-
+        results = self._get_spots_json(url)
         return self._spots_from_data(results)
 
     def put_spot(self, spot_id, spot_json: str, etag) -> Tuple[MockHTTP,
                                                                bytes]:
         url = "/api/v1/spot/%s" % spot_id
-        implementation = Spotseeker_DAO().get_implementation()
-
-        if implementation.is_mock():
-            response = Spotseeker_DAO().putURL(url, {})
-        else:
-            headers = {"X-OAuth-User": os.getenv('OAUTH_USER'),
-                       "If-Match": etag}
-            response = Spotseeker_DAO().putURL(url, headers, spot_json)
+        headers = {"X-OAuth-User": os.getenv('OAUTH_USER'),
+                   "If-Match": etag}
+        response = Spotseeker_DAO().putURL(url, headers, spot_json)
 
         if response.status != 200:
             raise DataFailureException(url, response.status, response.data)
@@ -136,14 +137,9 @@ class Spotseeker(object):
 
     def delete_spot(self, spot_id, etag) -> Tuple[MockHTTP, bytes]:
         url = "/api/v1/spot/%s" % spot_id
-        implementation = Spotseeker_DAO().get_implementation()
-
-        if implementation.is_mock():
-            response = Spotseeker_DAO().deleteURL(url)
-        else:
-            headers = {"X-OAuth-User": os.getenv('OAUTH_USER'),
-                       "If-Match": etag}
-            response = Spotseeker_DAO().deleteURL(url, headers)
+        headers = {"X-OAuth-User": os.getenv('OAUTH_USER'),
+                   "If-Match": etag}
+        response = Spotseeker_DAO().deleteURL(url, headers)
 
         content = response.data
         status = response.status
@@ -155,14 +151,9 @@ class Spotseeker(object):
 
     def post_spot(self, spot_json: str) -> MockHTTP:
         url = "/api/v1/spot"
-        implementation = Spotseeker_DAO().get_implementation()
-
-        if implementation.is_mock():
-            response = Spotseeker_DAO().postURL(url)
-        else:
-            headers = {"X-OAuth-User": os.getenv('OAUTH_USER'),
-                       "Content-Type": "application/json"}
-            response = Spotseeker_DAO().postURL(url, headers, spot_json)
+        headers = {"X-OAuth-User": os.getenv('OAUTH_USER'),
+                   "Content-Type": "application/json"}
+        response = Spotseeker_DAO().postURL(url, headers, spot_json)
 
         content = response.data
         status = response.status
@@ -172,32 +163,21 @@ class Spotseeker(object):
 
         return response
 
-    def get_spot_by_id(self, spot_id):
+    def get_spot_by_id(self, spot_id: int) -> Spot:
         self._validate_spotid(spot_id)
-
         url = "/api/v1/spot/%s" % spot_id
-        response = Spotseeker_DAO().getURL(url)
-        status = response.status
-        content = response.data
-
-        if status != 200:
-            raise DataFailureException(url, status, content)
-
-        return self._spot_from_data(json.loads(content.decode('utf-8')))
+        results = self._get_spots_json(url)
+        return self._spot_from_data(results)
 
     def get_building_list(self, campus, app_type=None) -> List[dict]:
         url = "/api/v1/buildings?extended_info:campus=" + campus
         if app_type:
             url += "&extended_info:app_type=" + app_type
 
-        response = Spotseeker_DAO().getURL(url)
-        status = response.status
-        content = response.data
+        return self._get_spots_json(url)
 
-        if status != 200:
-            raise DataFailureException(url, status, content)
-
-        return json.loads(content.decode('utf-8'))
+    def get_spots_from_json(self, json_data) -> List[Spot]:
+        return self._spots_from_data(json_data)
 
     def _spots_from_data(self, spots_data) -> List[Spot]:
         return [self._spot_from_data(spot_data) for spot_data in spots_data]
