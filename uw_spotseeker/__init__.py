@@ -8,19 +8,14 @@ This is the interface for interacting with the Spotseeker Server REST API
 from restclients_core.exceptions import DataFailureException
 from restclients_core.models import MockHTTP
 from uw_spotseeker.dao import Spotseeker_DAO
-from uw_spotseeker.models import (Spot,
-                                  SpotType,
-                                  SpotImage,
-                                  ItemImage,
-                                  SpotItem,
-                                  SpotAvailableHours,
+from uw_spotseeker.models import (Spot, SpotType, SpotImage, ItemImage,
+                                  SpotItem, SpotAvailableHours,
                                   SpotExtendedInfo)
 from uw_spotseeker.exceptions import InvalidSpotID
 from typing import Tuple, List
 import json
 import dateutil.parser
 import re
-import six
 import datetime
 import logging
 import os
@@ -39,7 +34,7 @@ class Spotseeker(object):
 
         response = Spotseeker_DAO().postURL(url, headers)
         status = response.status
-        if status not in [200, 201]:
+        if status not in (200, 201):
             raise DataFailureException(url, status,
                                        getattr(response, 'reason', None))
 
@@ -323,7 +318,7 @@ class Spotseeker(object):
             kw = match.groupdict()
             if kw['microsecond']:
                 kw['microsecond'] = kw['microsecond'].ljust(6, '0')
-            kw = {k: int(v) for k, v in six.iteritems(kw) if v is not None}
+            kw = {k: int(v) for k, v in kw.items() if v is not None}
             return datetime.time(**kw)
 
     def _spot_types_from_data(self, type_data) -> List[SpotType]:

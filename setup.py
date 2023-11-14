@@ -30,7 +30,6 @@ setup(
         'commonconf',
         'requests',
         'requests_oauthlib',
-        'six',
         'Django>=2.2',
     ],
     license='Apache License, Version 2.0',
