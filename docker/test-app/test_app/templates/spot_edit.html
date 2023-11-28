@@ -1,0 +1,172 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2>{{ spot.name }}</h2>
+
+<form class="spot-form">
+    <div class="form-group">
+        <label for="name">Name</label>
+        <input type="text" name="name" value="{{ spot.name }}" class="form-control">
+    </div>
+
+    <div class="form-group">
+        <label for="latitude">Latitude</label>
+        <input type="number" name="latitude" value="{{ spot.latitude }}" class="form-control">
+    </div>
+
+    <div class="form-group">
+        <label for="longitude">Longitude</label>
+        <input type="number" name="longitude" value="{{ spot.longitude }}" class="form-control">
+    </div>
+
+    <div class="form-group">
+        <label for="building">Building</label>
+        <select name="building_name" class="form-control">
+            {% for building in buildings %}
+                <option value="{{ building }}" {% if spot.building_name == building %}selected{% endif %}>{{ building }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label for="capacity">Capacity</label>
+        <input type="number" name="capacity" value="{{ spot.capacity }}" class="form-control">
+    </div>
+
+    <div class="form-group">
+        <label for="app-type">App Type</label>
+        <select name="extended_info:app_type" class="form-control">
+            <option value="study" {% if spot.app_type == 'study' %}selected{% endif %}>Study</option>
+            <option value="food" {% if spot.app_type == 'food' %}selected{% endif %}>Food</option>
+            <option value="tech" {% if spot.app_type == 'tech' %}selected{% endif %}>Tech</option>
+        </select>
+    </div>
+
+    {% if spot.items %}
+    <div class="form-group">
+        <h3>Items</h3>
+        {% for item in spot.items %}
+            <p>{{ item.name }}</p>
+
+            <div class="img-form">
+                <div class="form-group">
+                    <input type="file" name="item_image" accept="image/*">
+                </div>
+                <div class="form-group">
+                    <button class="upload-img" data-itemid="{{ item.item_id }}">Upload</button>
+                </div>
+            </div>
+
+            {% for item_image in item.images %}
+                <div class="img-block">
+                    <img src="{{ item_image.url|slice:'7:' }}" alt="{{ item_image.name }}">
+                    <div class="img-options">
+                        <button class="delete-img" onclick="deleteItemImage({{ item.item_id }}, {{ item_image.image_id }})">Delete</button>
+                    </div>
+                </div>
+            {% endfor %}
+        {% endfor %}
+    </div>
+    {% endif %}
+</form>
+
+<button id="save-spot-edit" type="submit">Save</button>
+
+{% endblock %}
+
+{% block scripts %}
+
+<script>
+    function formSubmit(e) {
+        e.preventDefault();
+        const form = document.querySelector('.spot-form');
+        const data = new FormData(form);
+        const values = Object.fromEntries(data.entries());
+
+        let extendedInfo = {};
+
+        // add any extended info from values to extendedInfo
+        for (const [key, value] of Object.entries(values)) {
+            if (key.startsWith('extended_info:')) {
+                extendedInfo[key.substring(14)] = value;
+            }
+        }
+
+        const spotUrl = '/spot/{{ spot.spot_id }}'
+
+        // WARNING: this is a PUT, not a PATCH, so default extended_info values
+        // from create_sample_spots will be overwritten. This is fine for now
+        // and couldn't easily be solved without a PATCH endpoint.
+        fetch(spotUrl, {
+            method: 'PUT',
+            body: JSON.stringify({...values, extended_info: extendedInfo}),
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        }).then(res => {
+            if (res.ok) {
+                window.location.href = '/';
+            } else {
+                throw new Error('Something went wrong');
+            }
+        }).catch(err => {
+            console.log(err);
+            alert('Something went wrong');
+        });
+    };
+
+    const saveButton = document.querySelector('#save-spot-edit');
+    saveButton.addEventListener('click', formSubmit);
+
+    function deleteItemImage(itemId, imageId) {
+        const url = `/item/${itemId}/image/${imageId}`;
+
+        fetch(url, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        }).then(res => {
+            if (res.ok) {
+                window.location.reload();
+            } else {
+                throw new Error('Something went wrong, bad response');
+            }
+        });
+    }
+
+    // image upload
+    function uploadItemImage(uploadButton, imageInput) {
+        event.preventDefault();
+
+        const formData = new FormData();
+        formData.append('file', imageInput.files[0]);
+
+        const itemId = uploadButton.dataset.itemid;
+        fetch(`/item/${itemId}/image`, {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => {
+            if (response.ok) {
+                imageInput.value = '';
+                window.location.href = '/spot/{{ spot.spot_id }}/edit';
+                window.location.reload();
+            } else {
+                alert(`Something went wrong: ${response.status}`);
+            }
+        });
+    }
+
+    document.querySelectorAll('.img-form').forEach(imgBlock => {
+        const uploadButton = imgBlock.querySelector('.upload-img');
+        const imageInput = imgBlock.querySelector('input[type=file]');
+
+        uploadButton.addEventListener('click', () => {
+            uploadItemImage(uploadButton, imageInput);
+        });
+    });
+</script>
+
+{% endblock %}

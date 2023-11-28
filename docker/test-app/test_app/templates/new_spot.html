@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h2>Choose Data</h2>
+
+    <form>
+        <div class="form-group">
+            <label for="app_type">App Type</label>
+            <select class="form-control" name="extended_info:app_type">
+                <option value="food">Food</option>
+                <option value="study">Study</option>
+                <option value="tech">Tech</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="spot-name">Spot Name</label>
+            <input type="text" class="form-control" name="name" placeholder="Enter spot name" required>
+        </div>
+
+        <div class="form-group">
+            <label for="latitude">Latitude</label>
+            <input type="number" name="latitude" class="form-control" placeholder="Enter latitude" required>
+        </div>
+
+        <div class="form-group">
+            <label for="longitude">Longitude</label>
+            <input type="number" name="longitude" class="form-control" placeholder="Enter longitude" required>
+        </div>
+
+        <div class="form-group">
+            <label for="building">Building</label>
+            <select class="form-control" name="building_name" required>
+                <option value="">Select a building</option>
+                {% for building in buildings %}
+                <option value="{{ building }}">{{ building }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <button type="submit">Submit</button>
+    </form>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function formSubmit(e) {
+        e.preventDefault();
+        const data = new FormData(e.target);
+        const values = Object.fromEntries(data.entries());
+
+        const extendedInfo = {};
+
+        // add extended info from values to extendedInfo
+        for (const [key, value] of Object.entries(values)) {
+            if (key.startsWith('extended_info:')) {
+                extendedInfo[key.replace('extended_info:', '')] = value;
+            }
+        }
+
+        fetch('/spot', {
+            method: 'POST',
+            body: JSON.stringify({...values, extended_info: extendedInfo}),
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        }).then(res => {
+            if (res.ok) {
+                window.location.href = '/';
+            } else {
+                throw new Error('Something went wrong');
+            }
+        }).catch(err => {
+            console.log(err);
+            alert('Something went wrong');
+        });
+    };
+
+    const form = document.querySelector('form');
+    form.addEventListener('submit', formSubmit);
+</script>
+{% endblock %}

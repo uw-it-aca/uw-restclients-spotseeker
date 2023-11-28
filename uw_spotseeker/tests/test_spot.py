@@ -1,19 +1,15 @@
-# Copyright 2022 UW-IT, University of Washington
+# Copyright 2023 UW-IT, University of Washington
 # SPDX-License-Identifier: Apache-2.0
 
 from uw_spotseeker import Spotseeker
 from uw_spotseeker.utilities import fdao_spotseeker_override
-from restclients_core.exceptions import (
-    DataFailureException)
+from restclients_core.exceptions import DataFailureException
 from unittest import TestCase
 from PIL import Image
 import dateutil.parser
 import os
 import json
-try:
-    from BytesIO import BytesIO
-except ImportError:
-    from io import BytesIO
+from io import BytesIO
 
 
 @fdao_spotseeker_override
@@ -191,8 +187,8 @@ class SpotseekerTestSpot(TestCase):
 
     def test_post_image(self):
         spotseeker = Spotseeker()
-        response = spotseeker.post_image(1, "")
-        self.assertEqual(response, '')
+        response = spotseeker.post_image(6, b'')
+        self.assertEqual(response, b'')
 
     def test_delete_image(self):
         spotseeker = Spotseeker()
@@ -200,8 +196,8 @@ class SpotseekerTestSpot(TestCase):
 
     def test_post_item_image(self):
         spotseeker = Spotseeker()
-        response = spotseeker.post_item_image(1, "")
-        self.assertEqual(response, '')
+        response = spotseeker.post_item_image(1, b'')
+        self.assertEqual(response, b'')
 
     def test_delete_item_image(self):
         spotseeker = Spotseeker()

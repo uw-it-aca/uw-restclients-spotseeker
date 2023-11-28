@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2>{{ spot.name }}</h2>
+
+<form>
+    <div>
+        <label for="image">Upload Image</label>
+        <input type="file" id="image" accept="image/*" />
+    </div>
+
+    <div>
+        <button type="submit" id="upload">Upload</button>
+    </div>
+</form>
+
+<div class="imgs">
+{% for image in spot.images %}
+    <div class="img-block">
+        <!-- /api/v1/spot/1/image/1 -> /spot/1/image/1 -->
+        <img src="{{ image.url|slice:'7:' }}" alt="{{ spot.name }}"" />
+        <div class="img-options">
+            <button class="delete-img" data-imageid="{{ image.image_id }}">Delete</button>
+        </div>
+    </div>
+{% endfor %}
+</div>
+
+<p>{{ spot.latitude }} {{ spot.longitude }}</p>
+
+<p>{{ spot.building_name }}</p>
+
+<p>{{ spot.capacity }}</p>
+
+<p>{{ spot.last_modified }}</p>
+
+<strong>Extended Info:</strong>
+{% for ei in spot.extended_info %}
+    <p>{{ ei.key }}: {{ ei.value }}</p>
+{% endfor %}
+
+{% if spot.items %}
+
+<strong>Items:</strong>
+{% for item in spot.items %}
+    <p>{{ item.name }}</p>
+    {% for item_image in item.images %}
+        <div class="img-block">
+            <img src="{{ item_image.url|slice:'7:' }}" alt="{{ item.name }}" />
+            <div class="img-options">
+                <button class="delete-img" data-item="true" data-imageid="{{ item_image.image_id }}" data-itemid="{{ item.item_id }}">Delete</button>
+            </div>
+        </div>
+    {% endfor %}
+{% endfor %}
+
+{% endif %}
+
+<div>
+    <button id="edit" onclick="window.location.href='/spot/{{ spot.spot_id }}/edit'">Edit</button>
+    <button id="delete">Delete</button>
+</div>
+
+{% endblock %}
+
+{% block styles %}
+<style>
+    .imgs {
+        display: inline-block;
+    }
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // spot delete
+    const deleteButton = document.querySelector('#delete');
+
+    deleteButton.addEventListener('click', () => {
+        fetch('{{ spot.spot_id }}', {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => {
+            if (response.ok) {
+                window.location.href = '/';
+            } else {
+                alert('Something went wrong.');
+            }
+        });
+    });
+
+    // image delete
+    const deleteImgButtons = document.querySelectorAll('.delete-img');
+
+    function imageDelete(event) {
+        event.preventDefault();
+
+        // get image id from form
+        const imageId = event.target.dataset.imageid;
+        const isItem = event.target.dataset.item;
+        var imageUrl;
+
+        if (isItem) {
+            var itemId = event.target.dataset.itemid;
+            imageUrl = `/item/${itemId}/image/${imageId}`;
+        } else {
+            imageUrl = `/spot/{{ spot.spot_id }}/image/${imageId}`;
+        }
+
+        fetch(imageUrl, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => {
+            if (response.ok) {
+                window.location.reload();
+            } else {
+                alert('Something went wrong.');
+            }
+        });
+    }
+
+    deleteImgButtons.forEach(button => {
+        button.addEventListener('click', imageDelete);
+    });
+
+    // image upload
+    const uploadButton = document.querySelector('#upload');
+    const imageInput = document.querySelector('#image');
+
+    uploadButton.addEventListener('click', () => {
+        event.preventDefault();
+
+        const formData = new FormData();
+        formData.append('file', imageInput.files[0]);
+
+        fetch('{{ spot.spot_id }}/image', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => {
+            if (response.ok) {
+                window.location.href = '/spot/{{ spot.spot_id }}';
+                window.location.reload();
+            } else {
+                alert('Something went wrong.');
+            }
+        });
+    });
+</script>
+{% endblock %}
