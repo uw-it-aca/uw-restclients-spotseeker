@@ -35,6 +35,7 @@ class Spotseeker_LiveDAO(LiveDAO):
     # get token and set in cache, and time it takes to make request once
     # retrieved from cache
     EPSILON = 60
+    CACHE_KEY = settings.APP_NAME + "-oauth"
 
     def load(self, method, url, headers, body) -> MockHTTP:
         if body is None:
@@ -57,6 +58,7 @@ class Spotseeker_LiveDAO(LiveDAO):
                                              files=files,
                                              headers=headers)
 
+
         response = self.process_response(requests_response)
 
         return response
@@ -71,9 +73,8 @@ class Spotseeker_LiveDAO(LiveDAO):
 
     def set_token_in_cache(self, token: str, expiry: int) -> None:
         # set cache key to be app name
-        key_name = settings.APP_NAME
-        logger.debug(f'Setting {key_name} in cache for {expiry} seconds')
-        cache.set(key_name, token, timeout=expiry - self.EPSILON)
+        logger.debug(f'Setting {CACHE_KEY} in cache for {expiry} seconds')
+        cache.set(CACHE_KEY, token, timeout=expiry - self.EPSILON)
 
     def get_access_token(self) -> str:
         headers = {
@@ -104,15 +105,14 @@ class Spotseeker_LiveDAO(LiveDAO):
 
     def _get_access_token_from_cache(self) -> str:
         # set cache key to be app name
-        key_name = settings.APP_NAME
-        token = cache.get(key_name)
+        token = cache.get(CACHE_KEY)
 
         # console log token for debugging
         if token is None:
-            logger.debug(f'No token found in cache for {key_name}')
+            logger.debug(f'No token found in cache for {CACHE_KEY}')
             token = self.get_access_token()
         else:
-            logger.debug(f'Using token from cache for {key_name}')
+            logger.debug(f'Using token from cache for {CACHE_KEY}')
 
         return token
 
@@ -120,3 +120,4 @@ class Spotseeker_LiveDAO(LiveDAO):
         token = self._get_access_token_from_cache()
 
         return f'Bearer {token}'
+

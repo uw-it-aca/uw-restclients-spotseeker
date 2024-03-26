@@ -15,7 +15,8 @@ logger = logging.getLogger(__name__)
 
 
 def get_token() -> str:
-    return cache.get(settings.APP_NAME, 'no token in cache')
+    cache_key = settings.APP_NAME + "-oauth"
+    return cache.get(cache_key, 'no token in cache')
 
 
 class BuildingsView(View):
