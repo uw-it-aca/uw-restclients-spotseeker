@@ -1,4 +1,4 @@
-# Copyright 2023 UW-IT, University of Washington
+# Copyright 2024 UW-IT, University of Washington
 # SPDX-License-Identifier: Apache-2.0
 
 from django.http import HttpResponse
@@ -15,7 +15,8 @@ logger = logging.getLogger(__name__)
 
 
 def get_token() -> str:
-    return cache.get(settings.APP_NAME, 'no token in cache')
+    cache_key = settings.APP_NAME + "-oauth"
+    return cache.get(cache_key, 'no token in cache')
 
 
 class BuildingsView(View):
